@@ -9,6 +9,32 @@ module.exports = (client) => {
   const REALIZATOR_ROLE_ID =
     "1500930428993933373";
 
+  const CATEGORY_CLAIMED_ID =
+    "1510410009853431868";
+
+  const CATEGORY_UNCLAIMED_ID =
+    "1510410325038727311";
+
+  function cleanTicketName(name) {
+    return String(name || "ticket")
+      .toLowerCase()
+      .replace(/[\s_]+/g, "-")
+      .replace(/[^a-z0-9ąćęłńóśźż-]/gi, "")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 85) || "ticket";
+  }
+
+  function lockTicketName(currentName) {
+    const clean = cleanTicketName(currentName).replace(/^unlock-/, "").replace(/^lock-/, "");
+    return `lock-${clean}`;
+  }
+
+  function unlockTicketName(currentName) {
+    const clean = cleanTicketName(currentName).replace(/^lock-/, "").replace(/^unlock-/, "");
+    return `unlock-${clean}`;
+  }
+
   const EMOJI = {
 
     warning:
@@ -44,6 +70,10 @@ module.exports = (client) => {
       const validTicket =
 
         interaction.channel.name.startsWith("exchange-") ||
+
+        interaction.channel.name.startsWith("unlock-") ||
+
+        interaction.channel.name.startsWith("lock-") ||
 
         interaction.channel.name.startsWith("buy-") ||
 
@@ -140,6 +170,9 @@ module.exports = (client) => {
               ManageMessages: true
             }
           );
+
+          await interaction.channel.setParent(CATEGORY_CLAIMED_ID, { lockPermissions: false }).catch(() => {});
+          await interaction.channel.setName(lockTicketName(interaction.channel.name)).catch(() => {});
 
           // save
           claimedTickets.set(
@@ -253,6 +286,9 @@ module.exports = (client) => {
             )
 
           ).catch(() => {});
+
+          await interaction.channel.setParent(CATEGORY_UNCLAIMED_ID, { lockPermissions: false }).catch(() => {});
+          await interaction.channel.setName(unlockTicketName(interaction.channel.name)).catch(() => {});
 
           // remove claim
           claimedTickets.delete(

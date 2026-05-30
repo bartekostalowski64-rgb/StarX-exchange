@@ -25,6 +25,9 @@ module.exports = (client) => {
   // Kanał z reakcjami / stary kanał legit-check, zostawiony jako fallback do pinga
   const REACTION_LEGIT_CHANNEL_ID = "1499519884860854505";
   const OPINIE_CHANNEL_ID = "1499519935657935049";
+  const CATEGORY_CLAIMED_ID = "1510410009853431868";
+  const CATEGORY_UNCLAIMED_ID = "1510410325038727311";
+
 
   // UZUPEŁNIJ SWOJE DANE PŁATNOŚCI
   const PAYMENT = {
@@ -67,6 +70,26 @@ module.exports = (client) => {
 
   function formatMoney(value) {
     return `${Number(value || 0).toFixed(2)} PLN`;
+  }
+
+  function cleanTicketName(name) {
+    return String(name || "ticket")
+      .toLowerCase()
+      .replace(/[\s_]+/g, "-")
+      .replace(/[^a-z0-9ąćęłńóśźż-]/gi, "")
+      .replace(/-+/g, "-")
+      .replace(/^-|-$/g, "")
+      .slice(0, 85) || "ticket";
+  }
+
+  function unlockTicketName(baseName) {
+    const clean = cleanTicketName(baseName).replace(/^lock-/, "").replace(/^unlock-/, "");
+    return `unlock-${clean}`;
+  }
+
+  function lockTicketName(currentName) {
+    const clean = cleanTicketName(currentName).replace(/^unlock-/, "").replace(/^lock-/, "");
+    return `lock-${clean}`;
   }
 
   async function giveClientRoleById(guild, userId) {
@@ -334,7 +357,9 @@ module.exports = (client) => {
         await interaction.guild.channels.create({
 
           name:
-            `${type}-${interaction.user.username}`.toLowerCase(),
+            unlockTicketName(`${type}-${interaction.user.username}`),
+
+          parent: CATEGORY_UNCLAIMED_ID,
 
           topic:
             `${interaction.user.id}:${type}`,
@@ -625,7 +650,9 @@ module.exports = (client) => {
         await interaction.guild.channels.create({
 
           name:
-            `${data.from.toLowerCase()}-${data.to.toLowerCase()}-${interaction.user.username}`.toLowerCase(),
+            unlockTicketName(`${data.from.toLowerCase()}-${data.to.toLowerCase()}-${interaction.user.username}`),
+
+          parent: CATEGORY_UNCLAIMED_ID,
 
           topic:
             `${interaction.user.id}:exchange:${data.amount}`,
@@ -740,6 +767,9 @@ module.exports = (client) => {
         ReadMessageHistory: true,
         ManageMessages: true
       }).catch(() => {});
+
+      await interaction.channel.setParent(CATEGORY_CLAIMED_ID, { lockPermissions: false }).catch(() => {});
+      await interaction.channel.setName(lockTicketName(interaction.channel.name)).catch(() => {});
 
       const embed = new EmbedBuilder()
         .setColor(EMBED_COLOR)

@@ -34,3 +34,9 @@ Zrobione pod wygląd ze screenów, ale z brandingiem **🌟 StarX Exchange**.
 ## Poprawka LC
 - Usunięto podwójny ping na kanale legit-check.
 - Klient nie traci dostępu do ticketa po samym wysłaniu embeda „WYSTAW LEGIT CHECKA”. Dostęp jest zabierany dopiero po wysłaniu przez klienta wiadomości `+rep` na kanale legit-check.
+
+## Kategorie ticketów
+- Nowo utworzone tickety trafiają do kategorii `1510410325038727311`.
+- Po kliknięciu/przyjęciu ticketa kanał przenosi się do kategorii `1510410009853431868`.
+- Nazwa kanału zmienia prefiks z `unlock-` na `lock-` po przejęciu.
+- Przy oddaniu ticketa `/odprzyjmij` kanał wraca do kategorii nieprzejętych i prefiksu `unlock-`.
