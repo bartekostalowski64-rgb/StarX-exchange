@@ -29,3 +29,8 @@ Zrobione pod wygląd ze screenów, ale z brandingiem **🌟 StarX Exchange**.
 - Usunięto przyciski i embed z danymi płatności BLIK z flow przejmowania.
 - Po wysłaniu legit checka dostęp zabierany jest klientowi, a realizator zostaje w tickecie.
 - Zamknięcie nie usuwa już ticketa automatycznie po wysłaniu wzoru LC.
+
+
+## Poprawka LC
+- Usunięto podwójny ping na kanale legit-check.
+- Klient nie traci dostępu do ticketa po samym wysłaniu embeda „WYSTAW LEGIT CHECKA”. Dostęp jest zabierany dopiero po wysłaniu przez klienta wiadomości `+rep` na kanale legit-check.

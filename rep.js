@@ -78,53 +78,7 @@ module.exports = (client) => {
     }
   });
 
-  // =========================
-  // RANGA → PING (auto delete)
-  // =========================
-  client.on(Events.GuildMemberUpdate, async (oldMember, newMember) => {
-    try {
-
-      const hadRole = oldMember.roles.cache.has(TARGET_ROLE_ID);
-      const hasRole = newMember.roles.cache.has(TARGET_ROLE_ID);
-
-      if (!hadRole && hasRole) {
-
-        const channel = await newMember.guild.channels.fetch(CHANNEL_ID).catch(() => null);
-        if (!channel) return;
-
-        const embed = new EmbedBuilder()
-          .setColor("#57F287")
-          .setTitle("🎉 StarX Exchange » NOWY LEGIT")
-          .setDescription(
-`👤 ${newMember}
-
-otrzymał klient ✅
-
-📌 Zostaw opinię:
-👉 <#${OPINIE_CHANNEL_ID}>
-
-📨 Dodaj legit check:
-👉 <#${LEGIT_CHANNEL_ID}>`
-          )
-          .setFooter({
-            text: "StarX Exchange • System reputacji"
-          })
-          .setTimestamp();
-
-        const msg = await channel.send({
-          content: `${newMember}`, // ping
-          embeds: [embed]
-        });
-
-        // usuń po 1 sekundzie
-        setTimeout(() => {
-          msg.delete().catch(() => {});
-        }, 1000);
-      }
-
-    } catch (err) {
-      console.log("❌ Role Ping Error:", err);
-    }
-  });
+  // Ping po nadaniu roli Klient jest obsługiwany w tickets.js przy wysyłaniu wiadomości LC,
+  // żeby na kanale legit-check nie pojawiały się dwa pingi.
 
 };

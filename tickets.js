@@ -50,6 +50,7 @@ module.exports = (client) => {
   const exchangeData = new Map();
   const claimedTickets = new Map();
   const userStats = new Map();
+  const pendingLegitTickets = new Map(); // clientId -> ticketChannelId
 
   function getUserStats(userId) {
     if (!userStats.has(userId)) userStats.set(userId, { exchanges: 8, total: 369 });
@@ -235,6 +236,35 @@ module.exports = (client) => {
   // =========================================
   // INTERACTIONS
   // =========================================
+  // Po tym jak klient faktycznie wyśle legit checka na kanał LC,
+  // dopiero wtedy zabierz mu dostęp do ticketa. Dzięki temu może skopiować wzór z ticketa.
+  client.on(Events.MessageCreate, async (message) => {
+    try {
+      if (message.author.bot) return;
+      if (message.channel.id !== LEGIT_CHECK_CHANNEL_ID) return;
+      if (!message.content?.trim().toLowerCase().startsWith("+rep")) return;
+
+      const ticketId = pendingLegitTickets.get(message.author.id);
+      if (!ticketId) return;
+
+      const ticket = await message.guild.channels.fetch(ticketId).catch(() => null);
+      if (!ticket) {
+        pendingLegitTickets.delete(message.author.id);
+        return;
+      }
+
+      await ticket.permissionOverwrites.edit(message.author.id, {
+        ViewChannel: false,
+        SendMessages: false,
+        ReadMessageHistory: false
+      }).catch(() => {});
+
+      pendingLegitTickets.delete(message.author.id);
+    } catch (err) {
+      console.log("LEGIT ACCESS REMOVE ERROR:", err);
+    }
+  });
+
   client.on(Events.InteractionCreate, async (interaction) => {
 
     // =========================
@@ -755,8 +785,10 @@ module.exports = (client) => {
       const legitText = `+rep ${interaction.user} Exchanged ${fromTo} ${formatMoney(amount)}`;
 
       // Dopiero przy wysłaniu wiadomości LC nadaj rolę Klient osobie kupującej / właścicielowi ticketa.
+      // Dostęp do ticketa zostaje klientowi aż do momentu, gdy faktycznie wyśle +rep na kanale LC.
       if (clientId) {
         await giveClientRoleById(interaction.guild, clientId);
+        pendingLegitTickets.set(clientId, interaction.channel.id);
       }
 
       await interaction.reply({
@@ -801,14 +833,7 @@ module.exports = (client) => {
         console.log("LEGIT PING ERROR:", err);
       }
 
-      // Po wysłaniu LC klient traci dostęp do ticketa, realizator zostaje bez zmian.
-      if (clientId) {
-        await interaction.channel.permissionOverwrites.edit(clientId, {
-          ViewChannel: false,
-          SendMessages: false,
-          ReadMessageHistory: false
-        }).catch(() => {});
-      }
+      // Nie zabieramy tu dostępu klientowi — zostanie zabrany dopiero po wysłaniu +rep na kanale LC.
     }
   });
 };
