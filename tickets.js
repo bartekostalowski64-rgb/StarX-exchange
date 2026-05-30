@@ -760,7 +760,7 @@ module.exports = (client) => {
       }
 
       await interaction.reply({
-        content: clientId ? `<@${clientId}>\n${legitText}` : legitText,
+        content: clientId ? `<@${clientId}>` : undefined,
         embeds: [new EmbedBuilder()
           .setColor(EMBED_COLOR)
           .setTitle("🌟 StarX Exchange × WYSTAW LEGIT CHECKA")
@@ -783,30 +783,32 @@ module.exports = (client) => {
 
 
 
-      // Ping na kanale legit-check dla osoby kupującej, żeby od razu widziała wzór.
+      // Ping dla kupującego na kanałach legit-check oraz zaznacz-reakcję.
+      // Bot wysyła tylko ping i usuwa go po 1 sekundzie — bez wysyłania wzoru +rep poza embedem.
       try {
-        const pingChannel = await interaction.client.channels.fetch(LEGIT_CHECK_CHANNEL_ID).catch(() => null);
-        if (pingChannel?.isTextBased()) {
-          await pingChannel.send({
-            content: clientId ? `<@${clientId}>\n\`\`\`text\n${legitText}\n\`\`\`` : `\`\`\`text\n${legitText}\n\`\`\``
-          });
-        }
+        const sendTempPing = async (channelId) => {
+          if (!clientId || !channelId) return;
+          const channel = await interaction.client.channels.fetch(channelId).catch(() => null);
+          if (!channel?.isTextBased()) return;
 
-        // Jeżeli używasz osobnego kanału od reakcji/starego legit-checka, bot też zaznaczy tam kupującego.
-        if (REACTION_LEGIT_CHANNEL_ID !== LEGIT_CHECK_CHANNEL_ID) {
-          const reactionChannel = await interaction.client.channels.fetch(REACTION_LEGIT_CHANNEL_ID).catch(() => null);
-          if (reactionChannel?.isTextBased()) {
-            await reactionChannel.send({
-              content: clientId ? `<@${clientId}>` : "Kupujący"
-            }).catch(() => {});
-          }
-        }
+          const msg = await channel.send({ content: `<@${clientId}>` }).catch(() => null);
+          if (msg) setTimeout(() => msg.delete().catch(() => {}), 1000);
+        };
+
+        await sendTempPing(LEGIT_CHECK_CHANNEL_ID);
+        await sendTempPing(REACTION_LEGIT_CHANNEL_ID);
       } catch (err) {
         console.log("LEGIT PING ERROR:", err);
       }
 
-      // Ticket zostaje otwarty dla realizatora.
-      // Dostęp klienta zostanie zabrany automatycznie po wysłaniu legit checka na kanale LC.
+      // Po wysłaniu LC klient traci dostęp do ticketa, realizator zostaje bez zmian.
+      if (clientId) {
+        await interaction.channel.permissionOverwrites.edit(clientId, {
+          ViewChannel: false,
+          SendMessages: false,
+          ReadMessageHistory: false
+        }).catch(() => {});
+      }
     }
   });
 };
