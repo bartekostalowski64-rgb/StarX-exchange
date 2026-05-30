@@ -760,7 +760,9 @@ module.exports = (client) => {
             `> ${EMOJI.arrow} Prosimy, abyś **wystawił legit checka** na kanale <#${LEGIT_CHECK_CHANNEL_ID}>`,
             ``,
             `> ${EMOJI.arrow} **Wzór:**`,
-            `> ${legitText}`,
+            `\`\`\`text`,
+            `${legitText}`,
+            `\`\`\``,
             ``,
             `> ${EMOJI.arrow} Po wystawieniu legit checka ticket zostanie **automatycznie zamknięty**.`
           ].join("\n"))
