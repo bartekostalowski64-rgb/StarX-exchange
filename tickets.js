@@ -19,16 +19,68 @@ module.exports = (client) => {
   // =========================================
   const PANEL_CHANNEL_ID = "1509429804770791494";
   const REALIZATOR_ROLE_ID = "1500930428993933373";
+  const CLIENT_ROLE_ID = "1499572498604363918";
+  const LEGIT_CHECK_CHANNEL_ID = "1499519884860854505";
+  const OPINIE_CHANNEL_ID = "1499519935657935049";
+
+  // UZUPEŁNIJ SWOJE DANE PŁATNOŚCI
+  const PAYMENT = {
+    blik: {
+      number: "780 130 528",
+      receiver: "Odbiorca kolega",
+      title: "oddaje (sam wybierz do adekwatnego do kwoty)"
+    }
+  };
+
+  // Podmień linki na swoje bannery z obrazków jak na screenach
+  const BANNER_TICKET_URL = process.env.BANNER_TICKET_URL || "https://i.imgur.com/QYhsGEm_d.webp?maxwidth=760&fidelity=grand";
+  const BANNER_LEGIT_URL = process.env.BANNER_LEGIT_URL || "https://i.imgur.com/QYhsGEm_d.webp?maxwidth=760&fidelity=grand";
 
   // =========================================
   // COLOR
   // =========================================
-  const EMBED_COLOR = "#1b2dff";
+  const EMBED_COLOR = "#2b2d31";
 
   // =========================================
   // TEMP DATA
   // =========================================
   const exchangeData = new Map();
+  const claimedTickets = new Map();
+  const userStats = new Map();
+
+  function getUserStats(userId) {
+    if (!userStats.has(userId)) userStats.set(userId, { exchanges: 8, total: 369 });
+    return userStats.get(userId);
+  }
+
+  function addUserExchange(userId, amount) {
+    const stats = getUserStats(userId);
+    stats.exchanges += 1;
+    stats.total += Number(amount) || 0;
+    userStats.set(userId, stats);
+    return stats;
+  }
+
+  function formatMoney(value) {
+    return `${Number(value || 0).toFixed(2)} PLN`;
+  }
+
+  function ticketButtons() {
+    return new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId("close_ticket")
+        .setEmoji("❌")
+        .setStyle(ButtonStyle.Danger),
+      new ButtonBuilder()
+        .setCustomId("claim_ticket")
+        .setEmoji("🔓")
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId("ticket_settings")
+        .setEmoji("⚙️")
+        .setStyle(ButtonStyle.Secondary)
+    );
+  }
 
   // =========================================
   // EMOJI
@@ -146,15 +198,15 @@ module.exports = (client) => {
         .setColor(EMBED_COLOR)
 
         .setTitle(
-          `${EMOJI.ticket} 🌟 StarX Exchange » System Ticketów`
+          `${EMOJI.ticket} 🌟 StarX Exchange » WYMIANA`
         )
 
         .setDescription([
 
           `> ${EMOJI.arrow} Wybierz kategorię z menu poniżej`,
-          `> ${EMOJI.arrow} Szybka pomoc realizatorów`,
-          `> ${EMOJI.arrow} Prywatny i bezpieczny kontakt`,
-          `> ${EMOJI.arrow} Odpowiedź zwykle w kilka minut`
+          `> ${EMOJI.arrow} Szybka i bezpieczna wymiana`,
+          `> ${EMOJI.arrow} Prywatny ticket z realizatorem`,
+          `> ${EMOJI.arrow} Automatyczne obliczenie prowizji`
 
         ].join("\n"))
 
@@ -286,15 +338,7 @@ module.exports = (client) => {
       // =====================================
       // BUTTON
       // =====================================
-      const row =
-        new ActionRowBuilder().addComponents(
-
-          new ButtonBuilder()
-            .setCustomId("close_ticket")
-            .setEmoji("❌")
-            .setLabel("Zamknij")
-            .setStyle(ButtonStyle.Danger)
-        );
+      const row = ticketButtons();
 
       // =====================================
       // EMBED
@@ -318,6 +362,7 @@ module.exports = (client) => {
             `> ${EMOJI.arrow} Realizator odpowie najszybciej jak to możliwe`
 
           ].join("\n"))
+          .setImage(BANNER_TICKET_URL)
 
           .setFooter({
             text: "© 2026 StarX Exchange"
@@ -544,7 +589,7 @@ module.exports = (client) => {
             `${data.from.toLowerCase()}-${data.to.toLowerCase()}-${interaction.user.username}`.toLowerCase(),
 
           topic:
-            `${interaction.user.id}:exchange`,
+            `${interaction.user.id}:exchange:${data.amount}`,
 
           type:
             ChannelType.GuildText,
@@ -581,15 +626,7 @@ module.exports = (client) => {
       // =====================================
       // BUTTON
       // =====================================
-      const row =
-        new ActionRowBuilder().addComponents(
-
-          new ButtonBuilder()
-            .setCustomId("close_ticket")
-            .setEmoji("❌")
-            .setLabel("Zamknij")
-            .setStyle(ButtonStyle.Danger)
-        );
+      const row = ticketButtons();
 
       // =====================================
       // EMBED
@@ -605,20 +642,16 @@ module.exports = (client) => {
 
           .setDescription([
 
-            `> ${EMOJI.arrow} Klient: ${interaction.user}`,
-            `> ${EMOJI.arrow} Status: \`Oczekiwanie na realizatora\``,
+            `> ${EMOJI.arrow} Użytkownik ${interaction.user} jest **nowym klientem**.`,
+            `> ${EMOJI.arrow} Dokonał on u nas **${getUserStats(interaction.user.id).exchanges} wymian** na kwotę **${formatMoney(getUserStats(interaction.user.id).total)}**.`,
 
             ``,
 
-            `## ${EMOJI.money} INFORMACJE O WYMIANIE`,
-
-            `> ${EMOJI.arrow} Kwota: \`${data.amount} PLN\``,
-            `> ${EMOJI.arrow} Z czego: \`${data.from}\``,
-            `> ${EMOJI.arrow} Na co: \`${data.to}\``,
-            `> ${EMOJI.arrow} Prowizja: \`${percent}%\``,
-            `> ${EMOJI.arrow} Po prowizji: \`${afterFee} PLN\``
+            `> ${EMOJI.arrow} Kwota wymiany wynosi **${formatMoney(data.amount)}** z metody **${data.from}** na **${data.to}**.`,
+            `> ${EMOJI.arrow} Po prowizjach otrzymasz od nas **${formatMoney(afterFee)}**.`
 
           ].join("\n"))
+          .setImage(BANNER_TICKET_URL)
 
           .setFooter({
             text: "© 2026 StarX Exchange"
@@ -644,6 +677,84 @@ module.exports = (client) => {
       });
     }
 
+
+    // =========================
+    // CLAIM BUTTON
+    // =========================
+    if (interaction.isButton() && interaction.customId === "claim_ticket") {
+      if (!interaction.member.roles.cache.has(REALIZATOR_ROLE_ID)) {
+        return interaction.reply({ content: `${EMOJI.warning} Nie jesteś realizatorem.`, ephemeral: true });
+      }
+
+      if (claimedTickets.has(interaction.channel.id)) {
+        return interaction.reply({ content: `${EMOJI.warning} Ticket jest już przejęty.`, ephemeral: true });
+      }
+
+      claimedTickets.set(interaction.channel.id, interaction.user.id);
+
+      await interaction.channel.permissionOverwrites.edit(REALIZATOR_ROLE_ID, { ViewChannel: false }).catch(() => {});
+      await interaction.channel.permissionOverwrites.edit(interaction.user.id, {
+        ViewChannel: true,
+        SendMessages: true,
+        ReadMessageHistory: true,
+        ManageMessages: true
+      }).catch(() => {});
+
+      const amount = interaction.channel.topic?.split(":")?.[2] || "0";
+      const stats = addUserExchange(interaction.channel.topic?.split(":")?.[0], amount);
+
+      const embed = new EmbedBuilder()
+        .setColor(EMBED_COLOR)
+        .setTitle("🌟 StarX Exchange × TICKET PRZEJĘTY")
+        .setDescription([
+          `> ${EMOJI.arrow} Twój ticket został przejęty przez: ${interaction.user}`,
+          `> ${EMOJI.arrow} Zrealizował on **${stats.exchanges} wymian** na łączną kwotę **${formatMoney(stats.total)}**.`
+        ].join("\n"))
+        .setFooter({ text: "© 2026 StarX Exchange" });
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId("payment_blik").setEmoji("🔍").setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId("ping_sent").setEmoji("📣").setStyle(ButtonStyle.Secondary)
+      );
+
+      return interaction.reply({ content: `${interaction.channel.topic?.split(":")?.[0] ? `<@${interaction.channel.topic.split(":")[0]}>` : ""}`, embeds: [embed], components: [row] });
+    }
+
+    // =========================
+    // PAYMENT BLIK
+    // =========================
+    if (interaction.isButton() && interaction.customId === "payment_blik") {
+      if (!interaction.member.roles.cache.has(REALIZATOR_ROLE_ID)) {
+        return interaction.reply({ content: `${EMOJI.warning} Nie jesteś realizatorem.`, ephemeral: true });
+      }
+
+      const embed = new EmbedBuilder()
+        .setColor(EMBED_COLOR)
+        .setTitle("🌟 StarX Exchange × DANE PŁATNOŚCI BLIK")
+        .setDescription([
+          `> ${EMOJI.arrow} Dane płatności exchangera: ${interaction.user}`,
+          ``,
+          PAYMENT.blik.number,
+          ``,
+          PAYMENT.blik.receiver,
+          ``,
+          PAYMENT.blik.title,
+          ``,
+          `Daj Ping gdy wyślesz`
+        ].join("\n"))
+        .setFooter({ text: "© 2026 StarX Exchange" });
+
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId("payment_check").setEmoji("🔍").setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId("payment_ping").setEmoji("📣").setStyle(ButtonStyle.Secondary)
+      );
+
+      return interaction.reply({ embeds: [embed], components: [row] });
+    }
+
+    if (interaction.isButton() && ["ticket_settings", "ping_sent", "payment_check", "payment_ping"].includes(interaction.customId)) {
+      return interaction.reply({ content: "✅ Akcja zapisana.", ephemeral: true });
+    }
     // =========================
     // CLOSE
     // =========================
@@ -665,9 +776,29 @@ module.exports = (client) => {
         });
       }
 
+      const clientId = interaction.channel.topic?.split(":")?.[0];
+      const fromTo = interaction.channel.name.split("-").slice(0, 2).join(" to ").toUpperCase();
+      const amount = interaction.channel.topic?.split(":")?.[2] || "0.00";
+      const legitText = `+rep ${interaction.user} Exchanged ${fromTo} ${formatMoney(amount)}`;
+
       await interaction.reply({
-        content:
-          `${EMOJI.lock} Ticket zostanie zamknięty za 3 sekundy...`
+        content: clientId ? `<@${clientId}>\n${legitText}` : legitText,
+        embeds: [new EmbedBuilder()
+          .setColor(EMBED_COLOR)
+          .setTitle("🌟 StarX Exchange × WYSTAW LEGIT CHECKA")
+          .setDescription([
+            `> ${EMOJI.arrow} Dziękujemy ${clientId ? `<@${clientId}>` : ""} za **skorzystanie z naszych usług**.`,
+            `> ${EMOJI.arrow} Mamy nadzieję, że to **nie ostatni raz**!`,
+            ``,
+            `> ${EMOJI.arrow} Prosimy, abyś **wystawił legit checka** na kanale <#${LEGIT_CHECK_CHANNEL_ID}>`,
+            ``,
+            `> ${EMOJI.arrow} **Wzór:**`,
+            `> ${legitText}`,
+            ``,
+            `> ${EMOJI.arrow} Po wystawieniu legit checka ticket zostanie **automatycznie zamknięty**.`
+          ].join("\n"))
+          .setImage(BANNER_LEGIT_URL)
+          .setFooter({ text: "© 2026 StarX Exchange" })]
       });
 
       setTimeout(async () => {
