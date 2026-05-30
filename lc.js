@@ -83,14 +83,6 @@ module.exports = (client) => {
                     });
                 }
 
-                // ================================
-                // NEW: GIVE CLIENT ROLE HERE
-                // ================================
-                const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
-                if (member) {
-                    member.roles.add(CLIENT_ROLE_ID).catch(() => {});
-                }
-
                 const menu =
                     new StringSelectMenuBuilder()
                         .setCustomId("lc_type")
@@ -332,21 +324,23 @@ ${EMOJI.arrow} **Wklej na <#${REP_CHANNEL_ID}>**`
             if (message.channel.id !== REP_CHANNEL_ID) return;
 
             const guild = message.guild;
+            const clientId = message.mentions.users.first()?.id || message.author.id;
 
             const ticket = guild.channels.cache.find(c =>
-                c.topic?.startsWith(message.author.id)
+                c.topic?.startsWith(clientId)
             );
 
             if (!ticket) return;
 
-            await ticket.permissionOverwrites.edit(message.author.id, {
+            await ticket.permissionOverwrites.edit(clientId, {
                 ViewChannel: false,
                 SendMessages: false,
                 ReadMessageHistory: false
             });
 
+            // Realizator ma dalej dostęp do ticketa, bo jego osobny overwrite zostaje bez zmian.
             await ticket.send({
-                content: `${EMOJI.lock} Dostęp do ticketa został usunięty po wysłaniu repa.`
+                content: `${EMOJI.lock} Dostęp klienta do ticketa został usunięty po wysłaniu legit checka.`
             });
 
         } catch (err) {

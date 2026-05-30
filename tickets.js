@@ -39,7 +39,7 @@ module.exports = (client) => {
   // =========================================
   // COLOR
   // =========================================
-  const EMBED_COLOR = "#2b2d31";
+  const EMBED_COLOR = "#1b2dff";
 
   // =========================================
   // TEMP DATA
@@ -65,6 +65,12 @@ module.exports = (client) => {
     return `${Number(value || 0).toFixed(2)} PLN`;
   }
 
+  async function giveClientRole(interaction) {
+    const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
+    if (!member) return;
+    await member.roles.add(CLIENT_ROLE_ID).catch(() => {});
+  }
+
   function ticketButtons() {
     return new ActionRowBuilder().addComponents(
       new ButtonBuilder()
@@ -74,10 +80,6 @@ module.exports = (client) => {
       new ButtonBuilder()
         .setCustomId("claim_ticket")
         .setEmoji("🔓")
-        .setStyle(ButtonStyle.Secondary),
-      new ButtonBuilder()
-        .setCustomId("ticket_settings")
-        .setEmoji("⚙️")
         .setStyle(ButtonStyle.Secondary)
     );
   }
@@ -334,6 +336,8 @@ module.exports = (client) => {
             }
           ]
         });
+
+      await giveClientRole(interaction);
 
       // =====================================
       // BUTTON
@@ -623,6 +627,8 @@ module.exports = (client) => {
           ]
         });
 
+      await giveClientRole(interaction);
+
       // =====================================
       // BUTTON
       // =====================================
@@ -643,7 +649,6 @@ module.exports = (client) => {
           .setDescription([
 
             `> ${EMOJI.arrow} Użytkownik ${interaction.user} jest **nowym klientem**.`,
-            `> ${EMOJI.arrow} Dokonał on u nas **${getUserStats(interaction.user.id).exchanges} wymian** na kwotę **${formatMoney(getUserStats(interaction.user.id).total)}**.`,
 
             ``,
 
@@ -700,59 +705,21 @@ module.exports = (client) => {
         ManageMessages: true
       }).catch(() => {});
 
-      const amount = interaction.channel.topic?.split(":")?.[2] || "0";
-      const stats = addUserExchange(interaction.channel.topic?.split(":")?.[0], amount);
-
       const embed = new EmbedBuilder()
         .setColor(EMBED_COLOR)
         .setTitle("🌟 StarX Exchange × TICKET PRZEJĘTY")
-        .setDescription([
-          `> ${EMOJI.arrow} Twój ticket został przejęty przez: ${interaction.user}`,
-          `> ${EMOJI.arrow} Zrealizował on **${stats.exchanges} wymian** na łączną kwotę **${formatMoney(stats.total)}**.`
-        ].join("\n"))
+        .setDescription(
+          `> ${EMOJI.arrow} Twój ticket został przejęty przez: ${interaction.user}`
+        )
         .setFooter({ text: "© 2026 StarX Exchange" });
 
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId("payment_blik").setEmoji("🔍").setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId("ping_sent").setEmoji("📣").setStyle(ButtonStyle.Secondary)
-      );
-
-      return interaction.reply({ content: `${interaction.channel.topic?.split(":")?.[0] ? `<@${interaction.channel.topic.split(":")[0]}>` : ""}`, embeds: [embed], components: [row] });
+      return interaction.reply({
+        content: `${interaction.channel.topic?.split(":")?.[0] ? `<@${interaction.channel.topic.split(":")[0]}>` : ""}`,
+        embeds: [embed]
+      });
     }
 
-    // =========================
-    // PAYMENT BLIK
-    // =========================
-    if (interaction.isButton() && interaction.customId === "payment_blik") {
-      if (!interaction.member.roles.cache.has(REALIZATOR_ROLE_ID)) {
-        return interaction.reply({ content: `${EMOJI.warning} Nie jesteś realizatorem.`, ephemeral: true });
-      }
-
-      const embed = new EmbedBuilder()
-        .setColor(EMBED_COLOR)
-        .setTitle("🌟 StarX Exchange × DANE PŁATNOŚCI BLIK")
-        .setDescription([
-          `> ${EMOJI.arrow} Dane płatności exchangera: ${interaction.user}`,
-          ``,
-          PAYMENT.blik.number,
-          ``,
-          PAYMENT.blik.receiver,
-          ``,
-          PAYMENT.blik.title,
-          ``,
-          `Daj Ping gdy wyślesz`
-        ].join("\n"))
-        .setFooter({ text: "© 2026 StarX Exchange" });
-
-      const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId("payment_check").setEmoji("🔍").setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder().setCustomId("payment_ping").setEmoji("📣").setStyle(ButtonStyle.Secondary)
-      );
-
-      return interaction.reply({ embeds: [embed], components: [row] });
-    }
-
-    if (interaction.isButton() && ["ticket_settings", "ping_sent", "payment_check", "payment_ping"].includes(interaction.customId)) {
+    if (interaction.isButton() && ["ping_sent", "payment_check", "payment_ping"].includes(interaction.customId)) {
       return interaction.reply({ content: "✅ Akcja zapisana.", ephemeral: true });
     }
     // =========================
@@ -801,13 +768,8 @@ module.exports = (client) => {
           .setFooter({ text: "© 2026 StarX Exchange" })]
       });
 
-      setTimeout(async () => {
-
-        await interaction.channel
-          .delete()
-          .catch(() => {});
-
-      }, 3000);
+      // Ticket zostaje otwarty dla realizatora.
+      // Dostęp klienta zostanie zabrany automatycznie po wysłaniu legit checka na kanale LC.
     }
   });
 };
