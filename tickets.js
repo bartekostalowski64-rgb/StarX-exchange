@@ -20,7 +20,10 @@ module.exports = (client) => {
   const PANEL_CHANNEL_ID = "1509429804770791494";
   const REALIZATOR_ROLE_ID = "1500930428993933373";
   const CLIENT_ROLE_ID = "1499572498604363918";
-  const LEGIT_CHECK_CHANNEL_ID = "1499519884860854505";
+  // Kanał, na którym klient ma wystawić legit checka / dostać ping
+  const LEGIT_CHECK_CHANNEL_ID = "1500893110048133253";
+  // Kanał z reakcjami / stary kanał legit-check, zostawiony jako fallback do pinga
+  const REACTION_LEGIT_CHANNEL_ID = "1499519884860854505";
   const OPINIE_CHANNEL_ID = "1499519935657935049";
 
   // UZUPEŁNIJ SWOJE DANE PŁATNOŚCI
@@ -65,8 +68,9 @@ module.exports = (client) => {
     return `${Number(value || 0).toFixed(2)} PLN`;
   }
 
-  async function giveClientRole(interaction) {
-    const member = await interaction.guild.members.fetch(interaction.user.id).catch(() => null);
+  async function giveClientRoleById(guild, userId) {
+    if (!guild || !userId) return;
+    const member = await guild.members.fetch(userId).catch(() => null);
     if (!member) return;
     await member.roles.add(CLIENT_ROLE_ID).catch(() => {});
   }
@@ -337,7 +341,8 @@ module.exports = (client) => {
           ]
         });
 
-      await giveClientRole(interaction);
+      // Rola Klient NIE jest nadawana przy utworzeniu ticketa.
+      // Dostanie ją dopiero kupujący po wysłaniu wiadomości LC.
 
       // =====================================
       // BUTTON
@@ -627,7 +632,8 @@ module.exports = (client) => {
           ]
         });
 
-      await giveClientRole(interaction);
+      // Rola Klient NIE jest nadawana przy utworzeniu ticketa.
+      // Dostanie ją dopiero kupujący po wysłaniu wiadomości LC.
 
       // =====================================
       // BUTTON
@@ -748,6 +754,11 @@ module.exports = (client) => {
       const amount = interaction.channel.topic?.split(":")?.[2] || "0.00";
       const legitText = `+rep ${interaction.user} Exchanged ${fromTo} ${formatMoney(amount)}`;
 
+      // Dopiero przy wysłaniu wiadomości LC nadaj rolę Klient osobie kupującej / właścicielowi ticketa.
+      if (clientId) {
+        await giveClientRoleById(interaction.guild, clientId);
+      }
+
       await interaction.reply({
         content: clientId ? `<@${clientId}>\n${legitText}` : legitText,
         embeds: [new EmbedBuilder()
@@ -769,6 +780,30 @@ module.exports = (client) => {
           .setImage(BANNER_LEGIT_URL)
           .setFooter({ text: "© 2026 StarX Exchange" })]
       });
+
+
+
+      // Ping na kanale legit-check dla osoby kupującej, żeby od razu widziała wzór.
+      try {
+        const pingChannel = await interaction.client.channels.fetch(LEGIT_CHECK_CHANNEL_ID).catch(() => null);
+        if (pingChannel?.isTextBased()) {
+          await pingChannel.send({
+            content: clientId ? `<@${clientId}>\n\`\`\`text\n${legitText}\n\`\`\`` : `\`\`\`text\n${legitText}\n\`\`\``
+          });
+        }
+
+        // Jeżeli używasz osobnego kanału od reakcji/starego legit-checka, bot też zaznaczy tam kupującego.
+        if (REACTION_LEGIT_CHANNEL_ID !== LEGIT_CHECK_CHANNEL_ID) {
+          const reactionChannel = await interaction.client.channels.fetch(REACTION_LEGIT_CHANNEL_ID).catch(() => null);
+          if (reactionChannel?.isTextBased()) {
+            await reactionChannel.send({
+              content: clientId ? `<@${clientId}>` : "Kupujący"
+            }).catch(() => {});
+          }
+        }
+      } catch (err) {
+        console.log("LEGIT PING ERROR:", err);
+      }
 
       // Ticket zostaje otwarty dla realizatora.
       // Dostęp klienta zostanie zabrany automatycznie po wysłaniu legit checka na kanale LC.
