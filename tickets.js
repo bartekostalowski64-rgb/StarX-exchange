@@ -116,6 +116,39 @@ module.exports = (client) => {
     );
   }
 
+
+  function createPurchaseLegitModal() {
+    return new ModalBuilder()
+      .setCustomId("purchase_legit_modal")
+      .setTitle("Legit check zakupu")
+      .addComponents(
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId("purchase_item")
+            .setLabel("Co kupił klient?")
+            .setPlaceholder("Np. YT Premium FA [LIFETIME]")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true)
+        ),
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId("purchase_amount")
+            .setLabel("Kwota")
+            .setPlaceholder("Np. 24")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true)
+        ),
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId("purchase_method")
+            .setLabel("Metoda płatności")
+            .setPlaceholder("Np. PSC / BLIK / PAYPAL / LTC")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true)
+        )
+      );
+  }
+
   // =========================================
   // EMOJI
   // =========================================
@@ -703,6 +736,76 @@ module.exports = (client) => {
       return interaction.reply({ embeds: [embed] });
     }
 
+
+    // =========================
+    // PURCHASE LEGIT MODAL
+    // =========================
+    if (interaction.isModalSubmit() && interaction.customId === "purchase_legit_modal") {
+      if (!interaction.member.roles.cache.has(REALIZATOR_ROLE_ID)) {
+        return interaction.reply({
+          content: `${EMOJI.warning} Tylko realizator może wysłać legit check.`,
+          ephemeral: true
+        });
+      }
+
+      const topicParts = String(interaction.channel.topic || "").split(":");
+      const clientId = topicParts?.[0];
+
+      const item = interaction.fields.getTextInputValue("purchase_item").trim();
+      const amountRaw = interaction.fields.getTextInputValue("purchase_amount").trim().replace(",", ".");
+      const method = interaction.fields.getTextInputValue("purchase_method").trim().toUpperCase();
+
+      const amountNumber = Number(amountRaw);
+      const amountText = Number.isFinite(amountNumber) ? `${amountNumber.toFixed(0)}PLN` : `${amountRaw}PLN`;
+      const legitText = `+rep ${interaction.user} Purchased ${item} ${amountText} [${method}]`;
+
+      if (clientId) {
+        await giveClientRoleById(interaction.guild, clientId);
+        pendingLegitTickets.set(clientId, interaction.channel.id);
+      }
+
+      await interaction.reply({
+        content: clientId ? `<@${clientId}>` : undefined,
+        embeds: [
+          new EmbedBuilder()
+            .setColor(EMBED_COLOR)
+            .setTitle("🌟 StarX Exchange × WYSTAW LEGIT CHECKA")
+            .setDescription([
+              `> ${EMOJI.arrow} Dziękujemy ${clientId ? `<@${clientId}>` : ""} za **skorzystanie z naszych usług**.`,
+              `> ${EMOJI.arrow} Mamy nadzieję, że to **nie ostatni raz**!`,
+              "",
+              `> ${EMOJI.arrow} Prosimy, abyś **wystawił legit checka** na kanale <#${LEGIT_CHECK_CHANNEL_ID}>`,
+              "",
+              `> ${EMOJI.arrow} **Wzór:**`,
+              "```text",
+              legitText,
+              "```",
+              "",
+              `> ${EMOJI.arrow} Po wystawieniu legit checka ticket zostanie **automatycznie zamknięty**.`
+            ].join("\n"))
+            .setImage(BANNER_LEGIT_URL)
+            .setFooter({ text: "© 2026 StarX Exchange" })
+        ]
+      });
+
+      try {
+        const sendTempPing = async (channelId) => {
+          if (!clientId || !channelId) return;
+          const channel = await interaction.client.channels.fetch(channelId).catch(() => null);
+          if (!channel?.isTextBased()) return;
+          const msg = await channel.send({ content: `<@${clientId}>` }).catch(() => null);
+          if (msg) setTimeout(() => msg.delete().catch(() => {}), 1000);
+        };
+
+        await sendTempPing(LEGIT_CHECK_CHANNEL_ID);
+        await sendTempPing(REACTION_LEGIT_CHANNEL_ID);
+      } catch (err) {
+        console.log("PURCHASE LEGIT PING ERROR:", err);
+      }
+
+      return;
+    }
+
     // =========================
     // SEND LEGIT CHECK BUTTON
     // =========================
@@ -715,6 +818,12 @@ module.exports = (client) => {
       }
 
       const topicParts = String(interaction.channel.topic || "").split(":");
+      const ticketType = topicParts?.[1];
+
+      if (ticketType === "buy") {
+        return interaction.showModal(createPurchaseLegitModal());
+      }
+
       const clientId = topicParts?.[0];
       const amount = topicParts?.[2] || "0.00";
       const exchangeInfo = getExchangeInfoFromTicket(interaction.channel);
