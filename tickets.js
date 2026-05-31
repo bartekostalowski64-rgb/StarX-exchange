@@ -703,67 +703,13 @@ module.exports = (client) => {
       return interaction.reply({ embeds: [embed] });
     }
 
-
     // =========================
     // SEND LEGIT CHECK BUTTON
     // =========================
     if (interaction.isButton() && interaction.customId === "send_legit_check") {
-
       if (!interaction.member.roles.cache.has(REALIZATOR_ROLE_ID)) {
-        return interaction.reply({ content: `${EMOJI.warning} Tylko realizator może wysłać legit check.`, ephemeral: true });
-      }
-
-      const topicParts = String(interaction.channel.topic || "").split(":");
-      const clientId = topicParts?.[0];
-      const amount = topicParts?.[2] || "0.00";
-      const exchangeInfo = getExchangeInfoFromTicket(interaction.channel);
-      const fromTo = `${displayExchangeMethod(exchangeInfo.from)} TO ${displayExchangeMethod(exchangeInfo.to)}`;
-      const legitText = `+rep ${interaction.user} Exchanged ${fromTo} ${formatMoney(amount)}`;
-
-      if (clientId) {
-        await giveClientRoleById(interaction.guild, clientId);
-        pendingLegitTickets.set(clientId, interaction.channel.id);
-      }
-
-      return interaction.reply({
-        content: clientId ? `<@${clientId}>` : undefined,
-        embeds: [new EmbedBuilder()
-          .setColor(EMBED_COLOR)
-          .setTitle("🌟 StarX Exchange × WYSTAW LEGIT CHECKA")
-          .setDescription([
-            `> ${EMOJI.arrow} Dziękujemy ${clientId ? `<@${clientId}>` : ""} za **skorzystanie z naszych usług**.`,
-            `> ${EMOJI.arrow} Mamy nadzieję, że to **nie ostatni raz**!`,
-            "",
-            `> ${EMOJI.arrow} Prosimy, abyś **wystawił legit checka** na kanale <#1500893110048133253>`,
-            "",
-            `> ${EMOJI.arrow} **Wzór:**`,
-            "```",
-            legitText,
-            "```",
-            "",
-            `> ${EMOJI.arrow} Po wystawieniu legit checka ticket zostanie **automatycznie zamknięty**.`
-          ].join("
-"))
-        ]
-      });
-    }
-    // =========================
-    // CLOSE
-    // =========================
-    if (
-      interaction.isButton() &&
-      interaction.customId === "close_ticket"
-    ) {
-
-      if (
-        !interaction.member.roles.cache.has(
-          REALIZATOR_ROLE_ID
-        )
-      ) {
-
         return interaction.reply({
-          content:
-            `${EMOJI.warning} Tylko realizator może zamknąć ticket.`,
+          content: `${EMOJI.warning} Tylko realizator może wysłać legit check.`,
           ephemeral: true
         });
       }
@@ -775,46 +721,40 @@ module.exports = (client) => {
       const fromTo = `${displayExchangeMethod(exchangeInfo.from)} TO ${displayExchangeMethod(exchangeInfo.to)}`;
       const legitText = `+rep ${interaction.user} Exchanged ${fromTo} ${formatMoney(amount)}`;
 
-      // Dopiero przy wysłaniu wiadomości LC nadaj rolę Klient osobie kupującej / właścicielowi ticketa.
-      // Dostęp do ticketa zostaje klientowi aż do momentu, gdy faktycznie wyśle +rep na kanale LC.
       if (clientId) {
         await giveClientRoleById(interaction.guild, clientId);
         pendingLegitTickets.set(clientId, interaction.channel.id);
       }
 
-      // close ticket directly
-      await interaction.channel.delete().catch(() => {});
-      return; //
-        embeds: [new EmbedBuilder()
-          .setColor(EMBED_COLOR)
-          .setTitle("🌟 StarX Exchange × WYSTAW LEGIT CHECKA")
-          .setDescription([
-            `> ${EMOJI.arrow} Dziękujemy ${clientId ? `<@${clientId}>` : ""} za **skorzystanie z naszych usług**.`,
-            `> ${EMOJI.arrow} Mamy nadzieję, że to **nie ostatni raz**!`,
-            ``,
-            `> ${EMOJI.arrow} Prosimy, abyś **wystawił legit checka** na kanale <#${LEGIT_CHECK_CHANNEL_ID}>`,
-            ``,
-            `> ${EMOJI.arrow} **Wzór:**`,
-            `\`\`\`text`,
-            `${legitText}`,
-            `\`\`\``,
-            ``,
-            `> ${EMOJI.arrow} Po wystawieniu legit checka ticket zostanie **automatycznie zamknięty**.`
-          ].join("\n"))
-          .setImage(BANNER_LEGIT_URL)
-          .setFooter({ text: "© 2026 StarX Exchange" })]
+      await interaction.reply({
+        content: clientId ? `<@${clientId}>` : undefined,
+        embeds: [
+          new EmbedBuilder()
+            .setColor(EMBED_COLOR)
+            .setTitle("🌟 StarX Exchange × WYSTAW LEGIT CHECKA")
+            .setDescription([
+              `> ${EMOJI.arrow} Dziękujemy ${clientId ? `<@${clientId}>` : ""} za **skorzystanie z naszych usług**.`,
+              `> ${EMOJI.arrow} Mamy nadzieję, że to **nie ostatni raz**!`,
+              "",
+              `> ${EMOJI.arrow} Prosimy, abyś **wystawił legit checka** na kanale <#${LEGIT_CHECK_CHANNEL_ID}>`,
+              "",
+              `> ${EMOJI.arrow} **Wzór:**`,
+              "```text",
+              legitText,
+              "```",
+              "",
+              `> ${EMOJI.arrow} Po wystawieniu legit checka ticket zostanie **automatycznie zamknięty**.`
+            ].join("\\n"))
+            .setImage(BANNER_LEGIT_URL)
+            .setFooter({ text: "© 2026 StarX Exchange" })
+        ]
       });
 
-
-
-      // Ping dla kupującego na kanałach legit-check oraz zaznacz-reakcję.
-      // Bot wysyła tylko ping i usuwa go po 1 sekundzie — bez wysyłania wzoru +rep poza embedem.
       try {
         const sendTempPing = async (channelId) => {
           if (!clientId || !channelId) return;
           const channel = await interaction.client.channels.fetch(channelId).catch(() => null);
           if (!channel?.isTextBased()) return;
-
           const msg = await channel.send({ content: `<@${clientId}>` }).catch(() => null);
           if (msg) setTimeout(() => msg.delete().catch(() => {}), 1000);
         };
@@ -825,7 +765,33 @@ module.exports = (client) => {
         console.log("LEGIT PING ERROR:", err);
       }
 
-      // Nie zabieramy tu dostępu klientowi — zostanie zabrany dopiero po wysłaniu +rep na kanale LC.
+      return;
+    }
+
+    // =========================
+    // CLOSE
+    // =========================
+    if (
+      interaction.isButton() &&
+      interaction.customId === "close_ticket"
+    ) {
+      if (!interaction.member.roles.cache.has(REALIZATOR_ROLE_ID)) {
+        return interaction.reply({
+          content: `${EMOJI.warning} Tylko realizator może zamknąć ticket.`,
+          ephemeral: true
+        });
+      }
+
+      await interaction.reply({
+        content: `${EMOJI.lock} Ticket zostanie zamknięty.`,
+        ephemeral: true
+      }).catch(() => {});
+
+      setTimeout(() => {
+        interaction.channel.delete().catch(() => {});
+      }, 1000);
+
+      return;
     }
   });
 };
