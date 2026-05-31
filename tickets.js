@@ -108,7 +108,11 @@ module.exports = (client) => {
       new ButtonBuilder()
         .setCustomId(isClaimed ? "unclaim_ticket" : "claim_ticket")
         .setEmoji(isClaimed ? { id: "1510596058470809690" } : { id: "1501697222901895258" })
-        .setStyle(ButtonStyle.Secondary)
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId("send_legit_check")
+        .setEmoji({ id: "1499784353012514917", animated: true })
+        .setStyle(ButtonStyle.Success)
     );
   }
 
@@ -697,6 +701,20 @@ module.exports = (client) => {
         .setFooter({ text: "© 2026 StarX Exchange" });
 
       return interaction.reply({ embeds: [embed] });
+    }
+
+
+    // =========================
+    // SEND LEGIT CHECK BUTTON
+    // =========================
+    if (interaction.isButton() && interaction.customId === "send_legit_check") {
+      if (!interaction.member.roles.cache.has(REALIZATOR_ROLE_ID)) {
+        return interaction.reply({ content: `${EMOJI.warning} Tylko realizator może wysłać legit check.`, ephemeral: true });
+      }
+
+      // Ten przycisk działa jak dotychczasowe wysłanie LC z ticketa.
+      // Jeżeli w bocie jest obsługa płatności / payment_ping, używamy jej zachowania.
+      interaction.customId = "payment_ping";
     }
 
     if (interaction.isButton() && ["ping_sent", "payment_check", "payment_ping"].includes(interaction.customId)) {
