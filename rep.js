@@ -21,17 +21,21 @@ module.exports = (client) => {
       .setColor("#2b2d31")
       .setTitle("🌟 StarX Exchange × LEGIT CHECK")
       .setDescription(
-`Dziękujemy za wybranie **StarX Exchange**! Twój legitcheck jest dla nas bardzo ważny i pomaga budować zaufanie.
+`<a:nitro:1501684762601848963> Dziękujemy za wybranie **StarX Exchange**!
 
-📄 **WZÓR LEGITCHECKA:**
-\`\`\`
+<:LIST:1501693215328440370> Twój legit check jest dla nas bardzo ważny i pomaga budować zaufanie.
+
+<a:Arrow_White:1508094625984811038> **WZÓR LEGIT CHECKA**
+\`\`\`md
 +rep @seller Purchased [co] [kwota]PLN [metoda]
 \`\`\`
 
-📌 **PRZYKŁAD:**
-\`\`\`
+<a:Arrow_White:1508094625984811038> **PRZYKŁAD**
+\`\`\`md
 +rep @jarek.svx Purchased Konto Stake 40PLN [BLIK]
 \`\`\`
+
+<:PIN:1501697389050986546> Po wystawieniu legit checka ticket zostanie automatycznie zamknięty.
 
 © 2026 StarX Exchange`
       )
