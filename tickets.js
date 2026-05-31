@@ -744,7 +744,7 @@ module.exports = (client) => {
               "```",
               "",
               `> ${EMOJI.arrow} Po wystawieniu legit checka ticket zostanie **automatycznie zamknięty**.`
-            ].join("\\n"))
+            ].join("\n"))
             .setImage(BANNER_LEGIT_URL)
             .setFooter({ text: "© 2026 StarX Exchange" })
         ]
