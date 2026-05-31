@@ -612,6 +612,110 @@ ${EMOJI.ticket} **ID**
                 });
             }
 
+
+            // =====================================
+            // UCZESTNICY GIVEAWAY
+            // =====================================
+
+            if (
+                interaction.isChatInputCommand() &&
+                interaction.commandName ===
+                    "uczestnicy"
+            ) {
+
+                if (
+                    !interaction.member.permissions.has(
+                        PermissionFlagsBits.Administrator
+                    )
+                ) {
+
+                    return interaction.reply({
+
+                        content:
+                            `${EMOJI.red} Brak permisji`,
+
+                        ephemeral: true
+                    });
+                }
+
+                const id =
+                    interaction.options.getString(
+                        "id"
+                    );
+
+                const g =
+                    giveaways[id];
+
+                if (!g) {
+
+                    return interaction.reply({
+
+                        content:
+                            `${EMOJI.red} Nie znaleziono giveaway o ID: \`${id}\``,
+
+                        ephemeral: true
+                    });
+                }
+
+                const uniqueEntries =
+                    [...new Set(g.entries)];
+
+                const list =
+                    uniqueEntries.length
+                        ? uniqueEntries.map((userId, index) => `${index + 1}. <@${userId}> \`${userId}\``).join("\\n")
+                        : "Brak uczestników";
+
+                const chunks = [];
+                let current = "";
+
+                for (const line of list.split("\\n")) {
+                    if ((current + "\\n" + line).length > 3500) {
+                        chunks.push(current);
+                        current = line;
+                    } else {
+                        current += current ? "\\n" + line : line;
+                    }
+                }
+
+                if (current) chunks.push(current);
+
+                const embed =
+                    new EmbedBuilder()
+                        .setColor("#1b2dff")
+                        .setTitle(`${EMOJI.ticket} UCZESTNICY GIVEAWAY`)
+                        .setDescription(
+`${EMOJI.pin} **Nagroda**
+> ${g.reward}
+
+${EMOJI.ticket} **ID**
+> \`${id}\`
+
+${EMOJI.zap} **Liczba uczestników**
+> ${uniqueEntries.length}
+
+${EMOJI.arrow} **Lista**
+${chunks[0] || "Brak uczestników"}`
+                        )
+                        .setFooter({
+                            text:
+                                "© 2026 StarX Exchange x Giveaway"
+                        });
+
+                await interaction.reply({
+                    embeds: [embed],
+                    ephemeral: true
+                });
+
+                for (let i = 1; i < chunks.length; i++) {
+                    await interaction.followUp({
+                        content: chunks[i],
+                        ephemeral: true
+                    });
+                }
+
+                return;
+            }
+
             // =====================================
             // REROLL BUTTON
             // =====================================

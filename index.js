@@ -306,6 +306,26 @@ client.once(
               .setRequired(false)
           ),
 
+
+        new SlashCommandBuilder()
+
+          .setName("uczestnicy")
+
+          .setDescription(
+            "Sprawdź kto bierze udział w giveaway"
+          )
+
+          .addStringOption(o =>
+
+            o.setName("id")
+
+              .setDescription(
+                "ID giveaway"
+              )
+
+              .setRequired(true)
+          ),
+
         // =====================================
         // REROLL
         // =====================================
