@@ -708,17 +708,44 @@ module.exports = (client) => {
     // SEND LEGIT CHECK BUTTON
     // =========================
     if (interaction.isButton() && interaction.customId === "send_legit_check") {
+
       if (!interaction.member.roles.cache.has(REALIZATOR_ROLE_ID)) {
         return interaction.reply({ content: `${EMOJI.warning} Tylko realizator może wysłać legit check.`, ephemeral: true });
       }
 
-      // Ten przycisk działa jak dotychczasowe wysłanie LC z ticketa.
-      // Jeżeli w bocie jest obsługa płatności / payment_ping, używamy jej zachowania.
-      interaction.customId = "payment_ping";
-    }
+      const topicParts = String(interaction.channel.topic || "").split(":");
+      const clientId = topicParts?.[0];
+      const amount = topicParts?.[2] || "0.00";
+      const exchangeInfo = getExchangeInfoFromTicket(interaction.channel);
+      const fromTo = `${displayExchangeMethod(exchangeInfo.from)} TO ${displayExchangeMethod(exchangeInfo.to)}`;
+      const legitText = `+rep ${interaction.user} Exchanged ${fromTo} ${formatMoney(amount)}`;
 
-    if (interaction.isButton() && ["ping_sent", "payment_check", "payment_ping"].includes(interaction.customId)) {
-      return interaction.reply({ content: "✅ Akcja zapisana.", ephemeral: true });
+      if (clientId) {
+        await giveClientRoleById(interaction.guild, clientId);
+        pendingLegitTickets.set(clientId, interaction.channel.id);
+      }
+
+      return interaction.reply({
+        content: clientId ? `<@${clientId}>` : undefined,
+        embeds: [new EmbedBuilder()
+          .setColor(EMBED_COLOR)
+          .setTitle("🌟 StarX Exchange × WYSTAW LEGIT CHECKA")
+          .setDescription([
+            `> ${EMOJI.arrow} Dziękujemy ${clientId ? `<@${clientId}>` : ""} za **skorzystanie z naszych usług**.`,
+            `> ${EMOJI.arrow} Mamy nadzieję, że to **nie ostatni raz**!`,
+            "",
+            `> ${EMOJI.arrow} Prosimy, abyś **wystawił legit checka** na kanale <#1500893110048133253>`,
+            "",
+            `> ${EMOJI.arrow} **Wzór:**`,
+            "```",
+            legitText,
+            "```",
+            "",
+            `> ${EMOJI.arrow} Po wystawieniu legit checka ticket zostanie **automatycznie zamknięty**.`
+          ].join("
+"))
+        ]
+      });
     }
     // =========================
     // CLOSE
@@ -755,8 +782,9 @@ module.exports = (client) => {
         pendingLegitTickets.set(clientId, interaction.channel.id);
       }
 
-      await interaction.reply({
-        content: clientId ? `<@${clientId}>` : undefined,
+      // close ticket directly
+      await interaction.channel.delete().catch(() => {});
+      return; //
         embeds: [new EmbedBuilder()
           .setColor(EMBED_COLOR)
           .setTitle("🌟 StarX Exchange × WYSTAW LEGIT CHECKA")
