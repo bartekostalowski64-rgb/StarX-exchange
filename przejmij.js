@@ -113,7 +113,7 @@ module.exports = (client) => {
 
               ephemeral: true
             });
-          }
+          }*/
 
           // ticket check
           if (!validTicket) {
@@ -127,8 +127,8 @@ module.exports = (client) => {
             });
           }
 
-          // already claimed
-          if (
+          // already claimed disabled
+          /*if (
             claimedTickets.has(
               interaction.channel.id
             )

@@ -32,7 +32,7 @@ module.exports = (client) => {
       if (!channel) return console.log("❌ Nie znaleziono kanału opinii.");
 
       const embed = new EmbedBuilder()
-        .setColor('#2b2d31')
+        .setColor('#1b2dff')
         .setTitle('🌟 StarX Exchange » WYSTAW OPINIĘ')
         .setDescription(
 `» Wystawiając nam opinię pokazujesz innym, co zadowoliło Cię u nas.
@@ -151,7 +151,7 @@ module.exports = (client) => {
         const channel = await client.channels.fetch(OPINIE_CHANNEL_ID);
 
         const embed = new EmbedBuilder()
-          .setColor('#2b2d31')
+          .setColor('#1b2dff')
           .setTitle('🌟 StarX Exchange » OPINIA')
           .setDescription(
 `👤 **Twórca opinii:** ${interaction.user}
