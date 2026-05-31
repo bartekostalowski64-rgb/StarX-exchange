@@ -238,88 +238,52 @@ module.exports = (client) => {
     ];
   }
 
-  function exchangeOptionRaw(option) {
-    const raw = {
-      label: option.label,
-      value: option.value
-    };
-    if (option.emoji) raw.emoji = option.emoji;
-    return raw;
-  }
-
-  function getModalSelectValue(interaction, customId) {
-    try {
-      const field = interaction.fields?.fields?.get(customId);
-      if (field?.values?.length) return field.values[0];
-      if (field?.value) return field.value;
-
-      for (const row of interaction.components || []) {
-        for (const component of row.components || []) {
-          if (component.customId === customId || component.custom_id === customId) {
-            if (component.values?.length) return component.values[0];
-            if (component.value) return component.value;
-          }
-        }
-      }
-    } catch (_) {}
+  function normalizeExchangeMethod(value) {
+    const v = String(value || "").trim().toUpperCase().replace(/\s+/g, "");
+    if (["BLIK", "KODBLIK", "PAYPAL", "LTC", "CRYPTO"].includes(v)) return v;
+    if (v === "KOD-BLIK" || v === "KOD_BLIK") return "KODBLIK";
     return null;
   }
 
   function createExchangeModal() {
-    return {
-      custom_id: "exchange_full_modal",
-      title: "Potrzebne informacje.",
-      components: [
-        {
-          type: 1,
-          components: [{
-            type: 4,
-            custom_id: "exchange_amount",
-            label: "JAKA KWOTA",
-            style: 1,
-            placeholder: "Przykład: 100",
-            required: true
-          }]
-        },
-        {
-          type: 1,
-          components: [{
-            type: 3,
-            custom_id: "exchange_from",
-            placeholder: "Z CZEGO",
-            min_values: 1,
-            max_values: 1,
-            options: exchangeMethodOptions().map(exchangeOptionRaw)
-          }]
-        },
-        {
-          type: 1,
-          components: [{
-            type: 3,
-            custom_id: "exchange_to",
-            placeholder: "NA CO",
-            min_values: 1,
-            max_values: 1,
-            options: exchangeMethodOptions().map(exchangeOptionRaw)
-          }]
-        },
-        {
-          type: 1,
-          components: [{
-            type: 3,
-            custom_id: "exchange_currency",
-            placeholder: "JAKĄ WALUTĘ POSIADASZ",
-            min_values: 1,
-            max_values: 1,
-            options: [
-              { label: "PLN", value: "PLN", emoji: { name: "🇵🇱" } },
-              { label: "EUR", value: "EUR", emoji: { name: "🇪🇺" } },
-              { label: "USD", value: "USD", emoji: { name: "🇺🇸" } }
-            ]
-          }]
-        }
-      ]
-    };
+    return new ModalBuilder()
+      .setCustomId("exchange_full_modal")
+      .setTitle("Potrzebne informacje.")
+      .addComponents(
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId("exchange_amount")
+            .setLabel("JAKA KWOTA")
+            .setStyle(TextInputStyle.Short)
+            .setPlaceholder("Przykład: 100")
+            .setRequired(true)
+        ),
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId("exchange_from")
+            .setLabel("Z CZEGO")
+            .setStyle(TextInputStyle.Short)
+            .setPlaceholder("BLIK / KOD BLIK / PAYPAL / LTC / CRYPTO")
+            .setRequired(true)
+        ),
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId("exchange_to")
+            .setLabel("NA CO")
+            .setStyle(TextInputStyle.Short)
+            .setPlaceholder("BLIK / KOD BLIK / PAYPAL / LTC / CRYPTO")
+            .setRequired(true)
+        ),
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId("exchange_currency")
+            .setLabel("JAKĄ WALUTĘ POSIADASZ")
+            .setStyle(TextInputStyle.Short)
+            .setPlaceholder("PLN / EUR / USD")
+            .setValue("PLN")
+            .setRequired(true)
+        )
+      );
   }
 
   // =========================================
@@ -546,9 +510,9 @@ module.exports = (client) => {
     // =========================
     if (interaction.isModalSubmit() && interaction.customId === "exchange_full_modal") {
       const amount = interaction.fields.getTextInputValue("exchange_amount");
-      const from = getModalSelectValue(interaction, "exchange_from");
-      const to = getModalSelectValue(interaction, "exchange_to");
-      const currency = getModalSelectValue(interaction, "exchange_currency") || "PLN";
+      const from = normalizeExchangeMethod(interaction.fields.getTextInputValue("exchange_from"));
+      const to = normalizeExchangeMethod(interaction.fields.getTextInputValue("exchange_to"));
+      const currency = String(interaction.fields.getTextInputValue("exchange_currency") || "PLN").trim().toUpperCase();
 
       if (!amount || isNaN(amount)) {
         return interaction.reply({
@@ -559,7 +523,7 @@ module.exports = (client) => {
 
       if (!from || !to) {
         return interaction.reply({
-          content: `${EMOJI.warning} Wybierz obie metody: **Z CZEGO** i **NA CO**.`,
+          content: `${EMOJI.warning} Wpisz poprawne metody: **BLIK**, **KOD BLIK**, **PAYPAL**, **LTC** albo **CRYPTO**.`,
           ephemeral: true
         });
       }
