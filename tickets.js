@@ -227,6 +227,60 @@ module.exports = (client) => {
     );
   }
 
+
+  function exchangeMethodOptions() {
+    return [
+      { label: "BLIK", value: "BLIK", emoji: { id: "1499784231608389742" } },
+      { label: "KOD BLIK", value: "KODBLIK", emoji: { id: "1499784231608389742" } },
+      { label: "PAYPAL", value: "PAYPAL", emoji: { id: "1499784258091483236" } },
+      { label: "LTC", value: "LTC", emoji: { id: "1499784285211726014" } },
+      { label: "CRYPTO", value: "CRYPTO", emoji: { id: "1499784635201224724" } }
+    ];
+  }
+
+  function exchangeFormComponents() {
+    const fromMenu = new StringSelectMenuBuilder()
+      .setCustomId("exchange_from")
+      .setPlaceholder("Z CZEGO")
+      .addOptions(exchangeMethodOptions());
+
+    const toMenu = new StringSelectMenuBuilder()
+      .setCustomId("exchange_to")
+      .setPlaceholder("NA CO")
+      .addOptions(exchangeMethodOptions());
+
+    const amountButton = new ButtonBuilder()
+      .setCustomId("set_exchange_amount")
+      .setLabel("Wpisz kwotę")
+      .setEmoji("💰")
+      .setStyle(ButtonStyle.Primary);
+
+    const createButton = new ButtonBuilder()
+      .setCustomId("create_exchange_ticket")
+      .setLabel("Utwórz ticket")
+      .setEmoji("1501697124734206032")
+      .setStyle(ButtonStyle.Success);
+
+    return [
+      new ActionRowBuilder().addComponents(fromMenu),
+      new ActionRowBuilder().addComponents(toMenu),
+      new ActionRowBuilder().addComponents(amountButton, createButton)
+    ];
+  }
+
+  function exchangeFormEmbed(data = {}) {
+    return new EmbedBuilder()
+      .setColor(EMBED_COLOR)
+      .setTitle(`${EMOJI.money} 🌟 StarX Exchange × WYMIANA WALUTY`)
+      .setDescription([
+        `> ${EMOJI.arrow} **Jaka kwota:** ${data.amount ? `\`${data.amount} PLN\`` : "nie wpisano"}`,
+        `> ${EMOJI.arrow} **Z czego:** ${data.from ? `\`${data.from}\`` : "nie wybrano"}`,
+        `> ${EMOJI.arrow} **Na co:** ${data.to ? `\`${data.to}\`` : "nie wybrano"}`,
+        ``,
+        `Kliknij **Wpisz kwotę**, wybierz metody z list i kliknij **Utwórz ticket**.`
+      ].join("\n"));
+  }
+
   // =========================================
   // READY
   // =========================================
@@ -333,25 +387,13 @@ module.exports = (client) => {
       // EXCHANGE
       // =====================================
       if (type === "exchange") {
+        exchangeData.set(interaction.user.id, {});
 
-        const modal =
-          new ModalBuilder()
-            .setCustomId("exchange_modal")
-            .setTitle("Potrzebne informacje");
-
-        const amountInput =
-          new TextInputBuilder()
-            .setCustomId("exchange_amount")
-            .setLabel("JAKA KWOTA")
-            .setPlaceholder("Przykład: 100")
-            .setStyle(TextInputStyle.Short)
-            .setRequired(true);
-
-        modal.addComponents(
-          new ActionRowBuilder().addComponents(amountInput)
-        );
-
-        return interaction.showModal(modal);
+        return interaction.reply({
+          embeds: [exchangeFormEmbed({})],
+          components: exchangeFormComponents(),
+          ephemeral: true
+        });
       }
 
       // =====================================
@@ -465,153 +507,43 @@ module.exports = (client) => {
     }
 
     // =========================
-    // MODAL
+    // AMOUNT BUTTON
     // =========================
-    if (
-      interaction.isModalSubmit() &&
-      interaction.customId === "exchange_modal"
-    ) {
+    if (interaction.isButton() && interaction.customId === "set_exchange_amount") {
+      const modal = new ModalBuilder()
+        .setCustomId("exchange_amount_modal")
+        .setTitle("Jaka kwota?");
 
-      const amount =
-        interaction.fields.getTextInputValue("exchange_amount");
+      const amountInput = new TextInputBuilder()
+        .setCustomId("exchange_amount")
+        .setLabel("JAKA KWOTA")
+        .setPlaceholder("Przykład: 100")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(true);
 
-      if (isNaN(amount))
+      modal.addComponents(new ActionRowBuilder().addComponents(amountInput));
+      return interaction.showModal(modal);
+    }
+
+    // =========================
+    // AMOUNT MODAL
+    // =========================
+    if (interaction.isModalSubmit() && interaction.customId === "exchange_amount_modal") {
+      const amount = interaction.fields.getTextInputValue("exchange_amount");
+
+      if (isNaN(amount)) {
         return interaction.reply({
           content: `${EMOJI.warning} Kwota musi być liczbą.`,
           ephemeral: true
         });
+      }
 
-      exchangeData.set(interaction.user.id, {
-        amount
-      });
-
-      const fromMenu =
-        new StringSelectMenuBuilder()
-          .setCustomId("exchange_from")
-          .setPlaceholder("Z CZEGO")
-          .addOptions([
-            {
-              label: "BLIK",
-              value: "BLIK",
-              emoji: { id: "1499784231608389742" }
-            },
-            {
-              label: "KOD BLIK",
-              value: "KODBLIK",
-              emoji: { id: "1499784231608389742" }
-            },
-            {
-              label: "PAYPAL",
-              value: "PAYPAL",
-              emoji: { id: "1499784258091483236" }
-            },
-            {
-              label: "VINTED",
-              value: "VINTED",
-              emoji: "🟦"
-            },
-            {
-              label: "ZEN",
-              value: "ZEN",
-              emoji: "⚪"
-            },
-            {
-              label: "LTC",
-              value: "LTC",
-              emoji: { id: "1499784285211726014" }
-            },
-            {
-              label: "CRYPTO",
-              value: "CRYPTO",
-              emoji: { id: "1499784635201224724" }
-            }
-          ]);
-
-      const toMenu =
-        new StringSelectMenuBuilder()
-          .setCustomId("exchange_to")
-          .setPlaceholder("NA CO")
-          .addOptions([
-            {
-              label: "BLIK",
-              value: "BLIK",
-              emoji: { id: "1499784231608389742" }
-            },
-            {
-              label: "KOD BLIK",
-              value: "KODBLIK",
-              emoji: { id: "1499784231608389742" }
-            },
-            {
-              label: "PAYPAL",
-              value: "PAYPAL",
-              emoji: { id: "1499784258091483236" }
-            },
-            {
-              label: "VINTED",
-              value: "VINTED",
-              emoji: "🟦"
-            },
-            {
-              label: "ZEN",
-              value: "ZEN",
-              emoji: "⚪"
-            },
-            {
-              label: "LTC",
-              value: "LTC",
-              emoji: { id: "1499784285211726014" }
-            },
-            {
-              label: "CRYPTO",
-              value: "CRYPTO",
-              emoji: { id: "1499784635201224724" }
-            }
-          ]);
-
-      const createButton =
-        new ButtonBuilder()
-          .setCustomId("create_exchange_ticket")
-          .setLabel("Utwórz ticket")
-          .setEmoji("1501697124734206032")
-          .setStyle(ButtonStyle.Success);
+      const data = exchangeData.get(interaction.user.id) || {};
+      data.amount = amount;
+      exchangeData.set(interaction.user.id, data);
 
       return interaction.reply({
-
-        embeds: [
-
-          new EmbedBuilder()
-
-            .setColor(EMBED_COLOR)
-
-            .setTitle(
-              `${EMOJI.money} 🌟 StarX Exchange × WYMIANA WALUTY`
-            )
-
-            .setDescription([
-
-              `## JAKA KWOTA`,
-              `> ${EMOJI.arrow} **${amount} PLN**`,
-
-              ``,
-
-              `## Z CZEGO`,
-              `> ${EMOJI.arrow} Wybierz metodę poniżej`,
-
-              ``,
-
-              `## NA CO`,
-              `> ${EMOJI.arrow} Wybierz metodę poniżej`
-
-            ].join("\n"))
-        ],
-
-        components: [
-          new ActionRowBuilder().addComponents(fromMenu),
-          new ActionRowBuilder().addComponents(toMenu),
-          new ActionRowBuilder().addComponents(createButton)
-        ],
-
+        content: `${EMOJI.money} Kwota ustawiona: **${formatMoney(amount)}**. Wybierz teraz z czego i na co, potem kliknij **Utwórz ticket**.`,
         ephemeral: true
       });
     }
@@ -668,6 +600,13 @@ module.exports = (client) => {
 
       const data =
         exchangeData.get(interaction.user.id);
+
+      if (!data?.amount || isNaN(data.amount))
+        return interaction.reply({
+          content:
+            `${EMOJI.warning} Najpierw kliknij **Wpisz kwotę** i podaj poprawną kwotę.`,
+          ephemeral: true
+        });
 
       if (!data?.from || !data?.to)
         return interaction.reply({
