@@ -238,47 +238,88 @@ module.exports = (client) => {
     ];
   }
 
-  function exchangeFormComponents() {
-    const fromMenu = new StringSelectMenuBuilder()
-      .setCustomId("exchange_from")
-      .setPlaceholder("Z CZEGO")
-      .addOptions(exchangeMethodOptions());
-
-    const toMenu = new StringSelectMenuBuilder()
-      .setCustomId("exchange_to")
-      .setPlaceholder("NA CO")
-      .addOptions(exchangeMethodOptions());
-
-    const amountButton = new ButtonBuilder()
-      .setCustomId("set_exchange_amount")
-      .setLabel("Wpisz kwotę")
-      .setEmoji("💰")
-      .setStyle(ButtonStyle.Primary);
-
-    const createButton = new ButtonBuilder()
-      .setCustomId("create_exchange_ticket")
-      .setLabel("Utwórz ticket")
-      .setEmoji("1501697124734206032")
-      .setStyle(ButtonStyle.Success);
-
-    return [
-      new ActionRowBuilder().addComponents(fromMenu),
-      new ActionRowBuilder().addComponents(toMenu),
-      new ActionRowBuilder().addComponents(amountButton, createButton)
-    ];
+  function exchangeOptionRaw(option) {
+    const raw = {
+      label: option.label,
+      value: option.value
+    };
+    if (option.emoji) raw.emoji = option.emoji;
+    return raw;
   }
 
-  function exchangeFormEmbed(data = {}) {
-    return new EmbedBuilder()
-      .setColor(EMBED_COLOR)
-      .setTitle(`${EMOJI.money} 🌟 StarX Exchange × WYMIANA WALUTY`)
-      .setDescription([
-        `> ${EMOJI.arrow} **Jaka kwota:** ${data.amount ? `\`${data.amount} PLN\`` : "nie wpisano"}`,
-        `> ${EMOJI.arrow} **Z czego:** ${data.from ? `\`${data.from}\`` : "nie wybrano"}`,
-        `> ${EMOJI.arrow} **Na co:** ${data.to ? `\`${data.to}\`` : "nie wybrano"}`,
-        ``,
-        `Kliknij **Wpisz kwotę**, wybierz metody z list i kliknij **Utwórz ticket**.`
-      ].join("\n"));
+  function getModalSelectValue(interaction, customId) {
+    try {
+      const field = interaction.fields?.fields?.get(customId);
+      if (field?.values?.length) return field.values[0];
+      if (field?.value) return field.value;
+
+      for (const row of interaction.components || []) {
+        for (const component of row.components || []) {
+          if (component.customId === customId || component.custom_id === customId) {
+            if (component.values?.length) return component.values[0];
+            if (component.value) return component.value;
+          }
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
+  function createExchangeModal() {
+    return {
+      custom_id: "exchange_full_modal",
+      title: "Potrzebne informacje.",
+      components: [
+        {
+          type: 1,
+          components: [{
+            type: 4,
+            custom_id: "exchange_amount",
+            label: "JAKA KWOTA",
+            style: 1,
+            placeholder: "Przykład: 100",
+            required: true
+          }]
+        },
+        {
+          type: 1,
+          components: [{
+            type: 3,
+            custom_id: "exchange_from",
+            placeholder: "Z CZEGO",
+            min_values: 1,
+            max_values: 1,
+            options: exchangeMethodOptions().map(exchangeOptionRaw)
+          }]
+        },
+        {
+          type: 1,
+          components: [{
+            type: 3,
+            custom_id: "exchange_to",
+            placeholder: "NA CO",
+            min_values: 1,
+            max_values: 1,
+            options: exchangeMethodOptions().map(exchangeOptionRaw)
+          }]
+        },
+        {
+          type: 1,
+          components: [{
+            type: 3,
+            custom_id: "exchange_currency",
+            placeholder: "JAKĄ WALUTĘ POSIADASZ",
+            min_values: 1,
+            max_values: 1,
+            options: [
+              { label: "PLN", value: "PLN", emoji: { name: "🇵🇱" } },
+              { label: "EUR", value: "EUR", emoji: { name: "🇪🇺" } },
+              { label: "USD", value: "USD", emoji: { name: "🇺🇸" } }
+            ]
+          }]
+        }
+      ]
+    };
   }
 
   // =========================================
@@ -387,13 +428,7 @@ module.exports = (client) => {
       // EXCHANGE
       // =====================================
       if (type === "exchange") {
-        exchangeData.set(interaction.user.id, {});
-
-        return interaction.reply({
-          embeds: [exchangeFormEmbed({})],
-          components: exchangeFormComponents(),
-          ephemeral: true
-        });
+        return interaction.showModal(createExchangeModal());
       }
 
       // =====================================
@@ -507,225 +542,89 @@ module.exports = (client) => {
     }
 
     // =========================
-    // AMOUNT BUTTON
+    // EXCHANGE MODAL SUBMIT
     // =========================
-    if (interaction.isButton() && interaction.customId === "set_exchange_amount") {
-      const modal = new ModalBuilder()
-        .setCustomId("exchange_amount_modal")
-        .setTitle("Jaka kwota?");
-
-      const amountInput = new TextInputBuilder()
-        .setCustomId("exchange_amount")
-        .setLabel("JAKA KWOTA")
-        .setPlaceholder("Przykład: 100")
-        .setStyle(TextInputStyle.Short)
-        .setRequired(true);
-
-      modal.addComponents(new ActionRowBuilder().addComponents(amountInput));
-      return interaction.showModal(modal);
-    }
-
-    // =========================
-    // AMOUNT MODAL
-    // =========================
-    if (interaction.isModalSubmit() && interaction.customId === "exchange_amount_modal") {
+    if (interaction.isModalSubmit() && interaction.customId === "exchange_full_modal") {
       const amount = interaction.fields.getTextInputValue("exchange_amount");
+      const from = getModalSelectValue(interaction, "exchange_from");
+      const to = getModalSelectValue(interaction, "exchange_to");
+      const currency = getModalSelectValue(interaction, "exchange_currency") || "PLN";
 
-      if (isNaN(amount)) {
+      if (!amount || isNaN(amount)) {
         return interaction.reply({
           content: `${EMOJI.warning} Kwota musi być liczbą.`,
           ephemeral: true
         });
       }
 
-      const data = exchangeData.get(interaction.user.id) || {};
-      data.amount = amount;
-      exchangeData.set(interaction.user.id, data);
+      if (!from || !to) {
+        return interaction.reply({
+          content: `${EMOJI.warning} Wybierz obie metody: **Z CZEGO** i **NA CO**.`,
+          ephemeral: true
+        });
+      }
+
+      const existing = interaction.guild.channels.cache.find(c => c.topic?.startsWith(interaction.user.id));
+      if (existing) {
+        return interaction.reply({
+          content: `${EMOJI.warning} Masz już ticket: ${existing}`,
+          ephemeral: true
+        });
+      }
+
+      const exchange = `${from}->${to}`;
+      const percent = rates[exchange] || 4;
+      const afterFee = (Number(amount) * (1 - percent / 100)).toFixed(2);
+
+      const channel = await interaction.guild.channels.create({
+        name: unlockTicketName(`${from.toLowerCase()}-${to.toLowerCase()}-${interaction.user.username}`),
+        parent: CATEGORY_UNCLAIMED_ID,
+        topic: `${interaction.user.id}:exchange:${amount}`,
+        type: ChannelType.GuildText,
+        permissionOverwrites: [
+          { id: interaction.guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
+          {
+            id: interaction.user.id,
+            allow: [
+              PermissionsBitField.Flags.ViewChannel,
+              PermissionsBitField.Flags.SendMessages,
+              PermissionsBitField.Flags.ReadMessageHistory,
+              PermissionsBitField.Flags.AttachFiles
+            ]
+          },
+          {
+            id: REALIZATOR_ROLE_ID,
+            allow: [
+              PermissionsBitField.Flags.ViewChannel,
+              PermissionsBitField.Flags.SendMessages,
+              PermissionsBitField.Flags.ReadMessageHistory,
+              PermissionsBitField.Flags.ManageMessages
+            ]
+          }
+        ]
+      });
+
+      const embed = new EmbedBuilder()
+        .setColor(EMBED_COLOR)
+        .setTitle(`${EMOJI.money} 🌟 StarX Exchange × WYMIANA WALUTY`)
+        .setDescription([
+          `> ${EMOJI.arrow} Użytkownik ${interaction.user} jest **nowym klientem**.`,
+          ``,
+          `> ${EMOJI.arrow} Kwota wymiany wynosi **${Number(amount).toFixed(2)} ${currency}** z metody **${from}** na **${to}**.`,
+          `> ${EMOJI.arrow} Po prowizjach otrzymasz od nas **${formatMoney(afterFee)}**.`
+        ].join("\n"))
+        .setImage(BANNER_TICKET_URL)
+        .setFooter({ text: "© 2026 StarX Exchange" });
+
+      await channel.send({
+        content: `${interaction.user} <@&${REALIZATOR_ROLE_ID}>`,
+        embeds: [embed],
+        components: [ticketButtons()]
+      });
 
       return interaction.reply({
-        content: `${EMOJI.money} Kwota ustawiona: **${formatMoney(amount)}**. Wybierz teraz z czego i na co, potem kliknij **Utwórz ticket**.`,
+        content: `${EMOJI.ticket} Ticket został utworzony: ${channel}`,
         ephemeral: true
-      });
-    }
-
-    // =========================
-    // FROM
-    // =========================
-    if (
-      interaction.isStringSelectMenu() &&
-      interaction.customId === "exchange_from"
-    ) {
-
-      const data =
-        exchangeData.get(interaction.user.id);
-
-      if (!data)
-        return interaction.deferUpdate();
-
-      data.from = interaction.values[0];
-
-      exchangeData.set(interaction.user.id, data);
-
-      return interaction.deferUpdate();
-    }
-
-    // =========================
-    // TO
-    // =========================
-    if (
-      interaction.isStringSelectMenu() &&
-      interaction.customId === "exchange_to"
-    ) {
-
-      const data =
-        exchangeData.get(interaction.user.id);
-
-      if (!data)
-        return interaction.deferUpdate();
-
-      data.to = interaction.values[0];
-
-      exchangeData.set(interaction.user.id, data);
-
-      return interaction.deferUpdate();
-    }
-
-    // =========================
-    // CREATE EXCHANGE
-    // =========================
-    if (
-      interaction.isButton() &&
-      interaction.customId === "create_exchange_ticket"
-    ) {
-
-      const data =
-        exchangeData.get(interaction.user.id);
-
-      if (!data?.amount || isNaN(data.amount))
-        return interaction.reply({
-          content:
-            `${EMOJI.warning} Najpierw kliknij **Wpisz kwotę** i podaj poprawną kwotę.`,
-          ephemeral: true
-        });
-
-      if (!data?.from || !data?.to)
-        return interaction.reply({
-          content:
-            `${EMOJI.warning} Wybierz obie metody.`,
-          ephemeral: true
-        });
-
-      const exchange =
-        `${data.from}->${data.to}`;
-
-      const percent =
-        rates[exchange] || 4;
-
-      const afterFee =
-        (
-          Number(data.amount) *
-          (1 - percent / 100)
-        ).toFixed(2);
-
-      // =====================================
-      // CREATE CHANNEL
-      // =====================================
-      const channel =
-        await interaction.guild.channels.create({
-
-          name:
-            unlockTicketName(`${data.from.toLowerCase()}-${data.to.toLowerCase()}-${interaction.user.username}`),
-
-          parent: CATEGORY_UNCLAIMED_ID,
-
-          topic:
-            `${interaction.user.id}:exchange:${data.amount}`,
-
-          type:
-            ChannelType.GuildText,
-
-          permissionOverwrites: [
-
-            {
-              id: interaction.guild.id,
-              deny: [PermissionsBitField.Flags.ViewChannel]
-            },
-
-            {
-              id: interaction.user.id,
-              allow: [
-                PermissionsBitField.Flags.ViewChannel,
-                PermissionsBitField.Flags.SendMessages,
-                PermissionsBitField.Flags.ReadMessageHistory,
-                PermissionsBitField.Flags.AttachFiles
-              ]
-            },
-
-            {
-              id: REALIZATOR_ROLE_ID,
-              allow: [
-                PermissionsBitField.Flags.ViewChannel,
-                PermissionsBitField.Flags.SendMessages,
-                PermissionsBitField.Flags.ReadMessageHistory,
-                PermissionsBitField.Flags.ManageMessages
-              ]
-            }
-          ]
-        });
-
-      // Rola Klient NIE jest nadawana przy utworzeniu ticketa.
-      // Dostanie ją dopiero kupujący po wysłaniu wiadomości LC.
-
-      // =====================================
-      // BUTTON
-      // =====================================
-      const row = ticketButtons();
-
-      // =====================================
-      // EMBED
-      // =====================================
-      const embed =
-        new EmbedBuilder()
-
-          .setColor(EMBED_COLOR)
-
-          .setTitle(
-            `${EMOJI.money} 🌟 StarX Exchange × WYMIANA WALUTY`
-          )
-
-          .setDescription([
-
-            `> ${EMOJI.arrow} Użytkownik ${interaction.user} jest **nowym klientem**.`,
-
-            ``,
-
-            `> ${EMOJI.arrow} Kwota wymiany wynosi **${formatMoney(data.amount)}** z metody **${data.from}** na **${data.to}**.`,
-            `> ${EMOJI.arrow} Po prowizjach otrzymasz od nas **${formatMoney(afterFee)}**.`
-
-          ].join("\n"))
-          .setImage(BANNER_TICKET_URL)
-
-          .setFooter({
-            text: "© 2026 StarX Exchange"
-          });
-
-      // =====================================
-      // SEND
-      // =====================================
-      await channel.send({
-        content:
-          `${interaction.user} <@&${REALIZATOR_ROLE_ID}>`,
-        embeds: [embed],
-        components: [row]
-      });
-
-      exchangeData.delete(interaction.user.id);
-
-      return interaction.update({
-        content:
-          `${EMOJI.ticket} Ticket został utworzony: ${channel}`,
-        embeds: [],
-        components: []
       });
     }
 
