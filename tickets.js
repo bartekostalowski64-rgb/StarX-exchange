@@ -99,15 +99,15 @@ module.exports = (client) => {
     await member.roles.add(CLIENT_ROLE_ID).catch(() => {});
   }
 
-  function ticketButtons() {
+  function ticketButtons(isClaimed = false) {
     return new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("close_ticket")
         .setEmoji("❌")
         .setStyle(ButtonStyle.Danger),
       new ButtonBuilder()
-        .setCustomId("claim_ticket")
-        .setEmoji("🔓")
+        .setCustomId(isClaimed ? "unclaim_ticket" : "claim_ticket")
+        .setEmoji(isClaimed ? "🔓" : "🔒")
         .setStyle(ButtonStyle.Secondary)
     );
   }
@@ -779,10 +779,48 @@ module.exports = (client) => {
         )
         .setFooter({ text: "© 2026 StarX Exchange" });
 
+      await interaction.message.edit({ components: [ticketButtons(true)] }).catch(() => {});
+
       return interaction.reply({
         content: `${interaction.channel.topic?.split(":")?.[0] ? `<@${interaction.channel.topic.split(":")[0]}>` : ""}`,
         embeds: [embed]
       });
+    }
+
+    // =========================
+    // UNCLAIM BUTTON
+    // =========================
+    if (interaction.isButton() && interaction.customId === "unclaim_ticket") {
+      if (!interaction.member.roles.cache.has(REALIZATOR_ROLE_ID)) {
+        return interaction.reply({ content: `${EMOJI.warning} Nie jesteś realizatorem.`, ephemeral: true });
+      }
+
+      const claimedUserId = claimedTickets.get(interaction.channel.id);
+      if (!claimedUserId) {
+        await interaction.message.edit({ components: [ticketButtons(false)] }).catch(() => {});
+        return interaction.reply({ content: `${EMOJI.warning} Ticket nie jest przejęty.`, ephemeral: true });
+      }
+
+      await interaction.channel.permissionOverwrites.edit(REALIZATOR_ROLE_ID, {
+        ViewChannel: true,
+        SendMessages: true,
+        ReadMessageHistory: true,
+        ManageMessages: true
+      }).catch(() => {});
+
+      await interaction.channel.permissionOverwrites.delete(claimedUserId).catch(() => {});
+      await interaction.channel.setParent(CATEGORY_UNCLAIMED_ID, { lockPermissions: false }).catch(() => {});
+      await interaction.channel.setName(unlockTicketName(interaction.channel.name)).catch(() => {});
+      claimedTickets.delete(interaction.channel.id);
+      await interaction.message.edit({ components: [ticketButtons(false)] }).catch(() => {});
+
+      const embed = new EmbedBuilder()
+        .setColor(EMBED_COLOR)
+        .setTitle("🌟 StarX Exchange × TICKET ODPRZYJĘTY")
+        .setDescription(`> ${EMOJI.arrow} Ticket został odprzyjęty przez: ${interaction.user}`)
+        .setFooter({ text: "© 2026 StarX Exchange" });
+
+      return interaction.reply({ embeds: [embed] });
     }
 
     if (interaction.isButton() && ["ping_sent", "payment_check", "payment_ping"].includes(interaction.customId)) {
