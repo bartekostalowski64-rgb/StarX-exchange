@@ -133,6 +133,9 @@ module.exports = (client) => {
     middleman: "<:middleman:1500243884733894716>",
 
     blik: "<:blik:1499784231608389742>",
+    kodblik: "<:blik:1499784231608389742>",
+    vinted: "🟦",
+    zen: "⚪",
     paypal: "<:paypal:1499784258091483236>",
     ltc: "<:ltc:1499784285211726014>",
     crypto: "<:crypto:1499784635201224724>"
@@ -163,7 +166,19 @@ module.exports = (client) => {
     "LTC->BLIK": 4,
     "LTC->KODBLIK": 4,
     "LTC->PAYPAL": 4,
-    "LTC->CRYPTO": 4
+    "LTC->CRYPTO": 4,
+    "VINTED->BLIK": 9,
+    "VINTED->PAYPAL": 9,
+    "VINTED->LTC": 9,
+    "VINTED->CRYPTO": 9,
+    "ZEN->BLIK": 4,
+    "ZEN->PAYPAL": 4,
+    "ZEN->LTC": 4,
+    "ZEN->CRYPTO": 4,
+    "BLIK->VINTED": 8,
+    "PAYPAL->VINTED": 9,
+    "LTC->VINTED": 4,
+    "CRYPTO->VINTED": 4,
   };
 
   // =========================================
@@ -481,19 +496,34 @@ module.exports = (client) => {
               emoji: { id: "1499784231608389742" }
             },
             {
+              label: "KOD BLIK",
+              value: "KODBLIK",
+              emoji: { id: "1499784231608389742" }
+            },
+            {
               label: "PAYPAL",
               value: "PAYPAL",
               emoji: { id: "1499784258091483236" }
             },
             {
-              label: "CRYPTO",
-              value: "CRYPTO",
-              emoji: { id: "1499784635201224724" }
+              label: "VINTED",
+              value: "VINTED",
+              emoji: "🟦"
+            },
+            {
+              label: "ZEN",
+              value: "ZEN",
+              emoji: "⚪"
             },
             {
               label: "LTC",
               value: "LTC",
               emoji: { id: "1499784285211726014" }
+            },
+            {
+              label: "CRYPTO",
+              value: "CRYPTO",
+              emoji: { id: "1499784635201224724" }
             }
           ]);
 
@@ -508,19 +538,34 @@ module.exports = (client) => {
               emoji: { id: "1499784231608389742" }
             },
             {
+              label: "KOD BLIK",
+              value: "KODBLIK",
+              emoji: { id: "1499784231608389742" }
+            },
+            {
               label: "PAYPAL",
               value: "PAYPAL",
               emoji: { id: "1499784258091483236" }
             },
             {
-              label: "CRYPTO",
-              value: "CRYPTO",
-              emoji: { id: "1499784635201224724" }
+              label: "VINTED",
+              value: "VINTED",
+              emoji: "🟦"
+            },
+            {
+              label: "ZEN",
+              value: "ZEN",
+              emoji: "⚪"
             },
             {
               label: "LTC",
               value: "LTC",
               emoji: { id: "1499784285211726014" }
+            },
+            {
+              label: "CRYPTO",
+              value: "CRYPTO",
+              emoji: { id: "1499784635201224724" }
             }
           ]);
 
