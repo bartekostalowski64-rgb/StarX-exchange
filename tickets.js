@@ -245,6 +245,35 @@ module.exports = (client) => {
     return null;
   }
 
+  function displayExchangeMethod(value) {
+    const v = normalizeExchangeMethod(value) || String(value || "").toUpperCase();
+    if (v === "KODBLIK") return "KOD BLIK";
+    return v;
+  }
+
+  function getExchangeInfoFromTicket(channel) {
+    const topicParts = String(channel?.topic || "").split(":");
+    const topicFrom = normalizeExchangeMethod(topicParts[3]);
+    const topicTo = normalizeExchangeMethod(topicParts[4]);
+
+    if (topicFrom && topicTo) {
+      return { from: topicFrom, to: topicTo };
+    }
+
+    const parts = cleanTicketName(channel?.name || "")
+      .replace(/^lock-/, "")
+      .replace(/^unlock-/, "")
+      .split("-");
+
+    const from = normalizeExchangeMethod(parts[0]);
+    const to = normalizeExchangeMethod(parts[1]);
+
+    return {
+      from: from || "BLIK",
+      to: to || "LTC"
+    };
+  }
+
   function createExchangeModal() {
     return new ModalBuilder()
       .setCustomId("exchange_full_modal")
@@ -543,7 +572,7 @@ module.exports = (client) => {
       const channel = await interaction.guild.channels.create({
         name: unlockTicketName(`${from.toLowerCase()}-${to.toLowerCase()}-${interaction.user.username}`),
         parent: CATEGORY_UNCLAIMED_ID,
-        topic: `${interaction.user.id}:exchange:${amount}`,
+        topic: `${interaction.user.id}:exchange:${amount}:${from}:${to}:${currency}`,
         type: ChannelType.GuildText,
         permissionOverwrites: [
           { id: interaction.guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
@@ -574,7 +603,7 @@ module.exports = (client) => {
         .setDescription([
           `> ${EMOJI.arrow} Użytkownik ${interaction.user} jest **nowym klientem**.`,
           ``,
-          `> ${EMOJI.arrow} Kwota wymiany wynosi **${Number(amount).toFixed(2)} ${currency}** z metody **${from}** na **${to}**.`,
+          `> ${EMOJI.arrow} Kwota wymiany wynosi **${Number(amount).toFixed(2)} ${currency}** z metody **${displayExchangeMethod(from)}** na **${displayExchangeMethod(to)}**.`,
           `> ${EMOJI.arrow} Po prowizjach otrzymasz od nas **${formatMoney(afterFee)}**.`
         ].join("\n"))
         .setImage(BANNER_TICKET_URL)
@@ -694,9 +723,11 @@ module.exports = (client) => {
         });
       }
 
-      const clientId = interaction.channel.topic?.split(":")?.[0];
-      const fromTo = interaction.channel.name.split("-").slice(0, 2).join(" to ").toUpperCase();
-      const amount = interaction.channel.topic?.split(":")?.[2] || "0.00";
+      const topicParts = String(interaction.channel.topic || "").split(":");
+      const clientId = topicParts?.[0];
+      const amount = topicParts?.[2] || "0.00";
+      const exchangeInfo = getExchangeInfoFromTicket(interaction.channel);
+      const fromTo = `${displayExchangeMethod(exchangeInfo.from)} TO ${displayExchangeMethod(exchangeInfo.to)}`;
       const legitText = `+rep ${interaction.user} Exchanged ${fromTo} ${formatMoney(amount)}`;
 
       // Dopiero przy wysłaniu wiadomości LC nadaj rolę Klient osobie kupującej / właścicielowi ticketa.
