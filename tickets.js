@@ -103,11 +103,11 @@ module.exports = (client) => {
     return new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setCustomId("close_ticket")
-        .setEmoji("❌")
+        .setEmoji({ id: "1499784378992295956", animated: true })
         .setStyle(ButtonStyle.Danger),
       new ButtonBuilder()
         .setCustomId(isClaimed ? "unclaim_ticket" : "claim_ticket")
-        .setEmoji(isClaimed ? "🔓" : "🔒")
+        .setEmoji(isClaimed ? { id: "1510596058470809690" } : { id: "1501697222901895258" })
         .setStyle(ButtonStyle.Secondary)
     );
   }
