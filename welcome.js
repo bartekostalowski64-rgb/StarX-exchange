@@ -44,7 +44,7 @@ module.exports = (client) => {
       // =====================
       const embed = new EmbedBuilder()
 
-        .setColor("#2b2d31")
+        .setColor('#1b2dff')
 
         .setTitle(`${EMOJI.wave} StarX Exchange » Welcome`)
 

@@ -101,7 +101,7 @@ module.exports = (client) => {
         if (!channel) return;
 
         const embed = new EmbedBuilder()
-            .setColor("#5865F2")
+            .setColor('#1b2dff')
             .setTitle(`${EMOJIS.shield}・Weryfikacja`)
             .setDescription(
                 [
@@ -230,7 +230,7 @@ module.exports = (client) => {
                 // SUKCES
                 // =================================
                 const successEmbed = new EmbedBuilder()
-                    .setColor("#57F287")
+                    .setColor('#1b2dff')
                     .setDescription(
                         `${EMOJIS.verify} **Pomyślnie przeszedłeś weryfikację!**`
                     );
@@ -246,7 +246,7 @@ module.exports = (client) => {
                 // BŁĘDNA ODPOWIEDŹ
                 // =================================
                 const errorEmbed = new EmbedBuilder()
-                    .setColor("#ED4245")
+                    .setColor('#1b2dff')
                     .setDescription(
                         "❌ **Błędna odpowiedź! Spróbuj ponownie.**"
                     );

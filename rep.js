@@ -18,7 +18,7 @@ module.exports = (client) => {
   // =========================
   async function sendPanel(channel) {
     const embed = new EmbedBuilder()
-      .setColor("#2b2d31")
+      .setColor('#1b2dff')
       .setTitle("🌟 StarX Exchange × LEGIT CHECK")
       .setDescription(
 `<a:nitro:1501684762601848963> Dziękujemy za wybranie **StarX Exchange**!

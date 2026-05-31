@@ -186,7 +186,7 @@ module.exports = (client) => {
           const embed =
             new EmbedBuilder()
 
-              .setColor("#57F287")
+              .setColor('#1b2dff')
 
               .setDescription(
                 `${EMOJI.zap} Ticket został przejęty przez ${interaction.user}`
@@ -299,7 +299,7 @@ module.exports = (client) => {
           const embed =
             new EmbedBuilder()
 
-              .setColor("#FEE75C")
+              .setColor('#1b2dff')
 
               .setDescription(
                 `${EMOJI.lock} Ticket został oddany przez ${interaction.user}`

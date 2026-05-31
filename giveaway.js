@@ -358,7 +358,7 @@ ${EMOJI.arrow} Kliknij przycisk poniżej aby dołączyć.
         const embed =
             new EmbedBuilder()
 
-                .setColor("#0f1014")
+                .setColor('#1b2dff')
 
                 .setTitle(
                     `${EMOJI.confetti} GIVEAWAY ZAKOŃCZONY`

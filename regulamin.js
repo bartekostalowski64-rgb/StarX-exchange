@@ -11,7 +11,7 @@ module.exports = (client) => {
       if (!channel) return console.log("❌ Nie znaleziono kanału regulamin.");
 
       const embed = new EmbedBuilder()
-        .setColor("#5865F2")
+        .setColor('#1b2dff')
         .setTitle("<:regulamin:1501693215328440370> StarX Exchange • Regulamin")
         .setDescription(`
 ━━━━━━━━━━━━━━━━━━━━━━━  

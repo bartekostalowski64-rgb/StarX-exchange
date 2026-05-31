@@ -30,7 +30,7 @@ module.exports = (client) => {
       // embed
       const embed = new EmbedBuilder()
 
-        .setColor("#2b2d31")
+        .setColor('#1b2dff')
 
         .setTitle("🌟 StarX Exchange » Propozycja")
 
