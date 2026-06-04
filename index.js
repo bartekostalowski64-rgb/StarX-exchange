@@ -57,6 +57,7 @@ const modules = [
 
   "./tickets",
   "./welcome",
+  "./autolc",
   "./legit",
   "./opinie",
   "./kalkulator",
@@ -323,6 +324,27 @@ client.once(
                 "ID giveaway"
               )
 
+              .setRequired(true)
+          ),
+
+
+        new SlashCommandBuilder()
+
+          .setName("autolc")
+
+          .setDescription(
+            "Automatyczne LC przez webhook"
+          )
+
+          .addUserOption(o =>
+            o.setName("uzytkownik")
+              .setDescription("Za kogo wysłać")
+              .setRequired(true)
+          )
+
+          .addStringOption(o =>
+            o.setName("tekst")
+              .setDescription("Treść legit check")
               .setRequired(true)
           ),
 
