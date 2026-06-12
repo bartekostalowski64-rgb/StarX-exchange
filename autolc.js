@@ -18,7 +18,7 @@ module.exports = (client) => {
 
     try {
       const webhook = await interaction.channel.createWebhook({
-        name: `${user.username} [ Automatyczne LC ]`,
+        name: `${user.username} `,
         avatar: user.displayAvatarURL()
       });
 
