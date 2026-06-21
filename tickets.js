@@ -311,6 +311,21 @@ module.exports = (client) => {
     };
   }
 
+  
+
+  function createMiddlemanModal() {
+    return new ModalBuilder()
+      .setCustomId("middleman_modal")
+      .setTitle("Middleman")
+      .addComponents(new ActionRowBuilder().addComponents(
+        new TextInputBuilder()
+          .setCustomId("middleman_user")
+          .setLabel("ID drugiego użytkownika")
+          .setStyle(TextInputStyle.Short)
+          .setRequired(true)
+      ));
+  }
+
   function createExchangeModal() {
     return new ModalBuilder()
       .setCustomId("exchange_full_modal")
@@ -460,6 +475,9 @@ module.exports = (client) => {
       if (type === "exchange") {
         return interaction.showModal(createExchangeModal());
       }
+      if (type === "middleman") {
+        return interaction.showModal(createMiddlemanModal());
+      }
 
       // =====================================
       // CATEGORY NAME
@@ -572,6 +590,14 @@ module.exports = (client) => {
     }
 
     // =========================
+    // MIDDLEMAN MODAL SUBMIT
+    // =========================
+    if (interaction.isModalSubmit() && interaction.customId === "middleman_modal") {
+      const partnerId = interaction.fields.getTextInputValue("middleman_user");
+      await interaction.guild.channels.create({name: unlockTicketName(`middleman-${interaction.user.username}`),parent:CATEGORY_UNCLAIMED_ID,topic:`${interaction.user.id}:middleman`,type:ChannelType.GuildText,permissionOverwrites:[{id:interaction.guild.id,deny:[PermissionsBitField.Flags.ViewChannel]},{id:interaction.user.id,allow:[PermissionsBitField.Flags.ViewChannel,PermissionsBitField.Flags.SendMessages,PermissionsBitField.Flags.ReadMessageHistory]},{id:partnerId,allow:[PermissionsBitField.Flags.ViewChannel,PermissionsBitField.Flags.SendMessages,PermissionsBitField.Flags.ReadMessageHistory]},{id:REALIZATOR_ROLE_ID,allow:[PermissionsBitField.Flags.ViewChannel,PermissionsBitField.Flags.SendMessages,PermissionsBitField.Flags.ReadMessageHistory]}]}).then(async channel=>{await channel.send({content:`<@${partnerId}> ${interaction.user} <@&${REALIZATOR_ROLE_ID}>`}); await interaction.reply({content:`Ticket został utworzony: ${channel}`,ephemeral:true});});
+    }
+
+// =========================
     // EXCHANGE MODAL SUBMIT
     // =========================
     if (interaction.isModalSubmit() && interaction.customId === "exchange_full_modal") {
