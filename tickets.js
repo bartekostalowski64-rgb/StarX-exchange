@@ -352,7 +352,14 @@ module.exports = (client) => {
       );
   }
 
-  // =========================================
+  
+function createMiddlemanModal() {
+return new ModalBuilder().setCustomId("middleman_modal").setTitle("Middleman")
+.addComponents(new ActionRowBuilder().addComponents(
+new TextInputBuilder().setCustomId("middleman_user").setLabel("ID drugiego użytkownika").setStyle(TextInputStyle.Short).setRequired(true)));
+}
+
+// =========================================
   // READY
   // =========================================
   client.once(Events.ClientReady, async () => {
@@ -457,9 +464,8 @@ module.exports = (client) => {
       // =====================================
       // EXCHANGE
       // =====================================
-      if (type === "exchange") {
-        return interaction.showModal(createExchangeModal());
-      }
+      if (type === "exchange") { return interaction.showModal(createExchangeModal()); }
+ if (type === "middleman") { return interaction.showModal(createMiddlemanModal()); }
 
       // =====================================
       // CATEGORY NAME
