@@ -580,7 +580,25 @@ new TextInputBuilder().setCustomId("middleman_user").setLabel("ID drugiego użyt
     // =========================
     // EXCHANGE MODAL SUBMIT
     // =========================
-    if (interaction.isModalSubmit() && interaction.customId === "exchange_full_modal") {
+    if (interaction.
+if (interaction.isModalSubmit() && interaction.customId === "middleman_modal") {
+const uid = interaction.fields.getTextInputValue("middleman_user").trim();
+const member = await interaction.guild.members.fetch(uid).catch(()=>null);
+if(!member) return interaction.reply({content:"Nie znaleziono użytkownika.",ephemeral:true});
+const channel = await interaction.guild.channels.create({
+name: unlockTicketName(`middleman-${interaction.user.username}`),
+parent: CATEGORY_UNCLAIMED_ID,
+type: ChannelType.GuildText,
+permissionOverwrites:[
+{id: interaction.guild.id, deny:[PermissionsBitField.Flags.ViewChannel]},
+{id: interaction.user.id, allow:[PermissionsBitField.Flags.ViewChannel]},
+{id: member.id, allow:[PermissionsBitField.Flags.ViewChannel]},
+{id: REALIZATOR_ROLE_ID, allow:[PermissionsBitField.Flags.ViewChannel]}
+]});
+await channel.send({embeds:[new EmbedBuilder().setColor(EMBED_COLOR).setTitle("Middleman").setDescription(`Autor: <@${interaction.user.id}>\nDrugi użytkownik: <@${member.id}>`)]});
+return interaction.reply({content:`Utworzono ${channel}`,ephemeral:true});
+}
+isModalSubmit() && interaction.customId === "exchange_full_modal") {
       const amount = interaction.fields.getTextInputValue("exchange_amount");
       const from = normalizeExchangeMethod(interaction.fields.getTextInputValue("exchange_from"));
       const to = normalizeExchangeMethod(interaction.fields.getTextInputValue("exchange_to"));
