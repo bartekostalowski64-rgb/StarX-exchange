@@ -23,6 +23,8 @@ module.exports = (client) => {
     const EMOJI_PAYPAL = "<:paypal:1499784258091483236>";
     const EMOJI_CRYPTO = "<:crypto:1499784635201224724>";
     const EMOJI_LTC = "<:ltc:1499784285211726014>";
+    const EMOJI_PSC = ":MYPSC:";
+    const EMOJI_SKRILL = ":SKRILL:";
 
     const EMOJI_MONEY = "<a:money:1501685438103031920>";
     const EMOJI_BOX = "<:box:1500243849535033577>";
@@ -60,7 +62,22 @@ module.exports = (client) => {
         "LTC_BLIK": 4,
         "LTC_KODBLIK": 4,
         "LTC_PAYPAL": 4,
-        "LTC_CRYPTO": 4
+        "LTC_CRYPTO": 4,
+
+        // PSC
+        "PSC_BLIK": 11,
+        "PSC_KODBLIK": 11,
+        "PSC_PAYPAL": 11,
+        "PSC_CRYPTO": 13,
+        "PSC_LTC": 13,
+        "PSC_SKRILL": 11,
+
+        // SKRILL
+        "SKRILL_BLIK": 9,
+        "SKRILL_KODBLIK": 9,
+        "SKRILL_PAYPAL": 9,
+        "SKRILL_CRYPTO": 9,
+        "SKRILL_LTC": 9
     };
 
     // =====================
@@ -74,6 +91,8 @@ module.exports = (client) => {
         if (method === "PAYPAL") return EMOJI_PAYPAL;
         if (method === "CRYPTO") return EMOJI_CRYPTO;
         if (method === "LTC") return EMOJI_LTC;
+        if (method === "PSC") return EMOJI_PSC;
+        if (method === "SKRILL") return EMOJI_SKRILL;
 
         return "💸";
     }
@@ -204,6 +223,14 @@ ${EMOJI_BOX} Kliknij menu poniżej.
                                 id: "1499784635201224724",
                                 name: "crypto"
                             }
+                        },
+                        {
+                            label: "PSC",
+                            value: "PSC"
+                        },
+                        {
+                            label: "SKRILL",
+                            value: "SKRILL"
                         }
                     ]);
 
@@ -265,6 +292,14 @@ ${EMOJI_BOX} Kliknij menu poniżej.
                                 id: "1499784635201224724",
                                 name: "crypto"
                             }
+                        },
+                        {
+                            label: "PSC",
+                            value: "PSC"
+                        },
+                        {
+                            label: "SKRILL",
+                            value: "SKRILL"
                         }
                     ]);
 

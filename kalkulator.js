@@ -16,6 +16,8 @@ module.exports = async (client) => {
   const EMOJI_PAYPAL = "<:paypal:1499784258091483236>";
   const EMOJI_CRYPTO = "<:crypto:1499784635201224724>";
   const EMOJI_LTC = "<:ltc:1499784285211726014>";
+  const EMOJI_PSC = ":MYPSC:";
+  const EMOJI_SKRILL = ":SKRILL:";
 
   // ANIMOWANE
   const EMOJI_MONEY = "<a:money:1501685438103031920>";
@@ -96,6 +98,14 @@ ${EMOJI_BOX} Szybkie i przejrzyste prowizje.`
               id: "1499784285211726014",
               name: "ltc"
             }
+          },
+          {
+            label: "PSC",
+            value: "PSC"
+          },
+          {
+            label: "SKRILL",
+            value: "SKRILL"
           }
         ]);
 
@@ -194,6 +204,43 @@ ${EMOJI_ARROW} Minimalna prowizja wynosi: **3 PLN**
 • ${EMOJI_CRYPTO} **CRYPTO ➜** ${EMOJI_LTC} **LTC** — Prowizja wynosi: **4%**
 
 ━━━━━━━━━━━━━━━━━━━━━━━
+
+${EMOJI_ARROW} Minimalna prowizja wynosi: **3 PLN**
+`;
+    }
+
+    // ==========================
+    // PSC
+    // ==========================
+    if (type === "PSC") {
+
+      desc = `
+â€˘ ${EMOJI_PSC} **PSC âžś** ${EMOJI_BLIK} **BLIK** â€” Prowizja wynosi: **11%**
+â€˘ ${EMOJI_PSC} **PSC âžś** ${EMOJI_BLIK} **KOD BLIK** â€” Prowizja wynosi: **11%**
+â€˘ ${EMOJI_PSC} **PSC âžś** ${EMOJI_PAYPAL} **PAYPAL** â€” Prowizja wynosi: **11%**
+â€˘ ${EMOJI_PSC} **PSC âžś** ${EMOJI_CRYPTO} **CRYPTO** â€” Prowizja wynosi: **13%**
+â€˘ ${EMOJI_PSC} **PSC âžś** ${EMOJI_LTC} **LTC** â€” Prowizja wynosi: **13%**
+â€˘ ${EMOJI_PSC} **PSC âžś** ${EMOJI_SKRILL} **SKRILL** â€” Prowizja wynosi: **11%**
+
+â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+
+${EMOJI_ARROW} Minimalna prowizja wynosi: **3 PLN**
+`;
+    }
+
+    // ==========================
+    // SKRILL
+    // ==========================
+    if (type === "SKRILL") {
+
+      desc = `
+â€˘ ${EMOJI_SKRILL} **SKRILL âžś** ${EMOJI_BLIK} **BLIK** â€” Prowizja wynosi: **9%**
+â€˘ ${EMOJI_SKRILL} **SKRILL âžś** ${EMOJI_BLIK} **KOD BLIK** â€” Prowizja wynosi: **9%**
+â€˘ ${EMOJI_SKRILL} **SKRILL âžś** ${EMOJI_PAYPAL} **PAYPAL** â€” Prowizja wynosi: **9%**
+â€˘ ${EMOJI_SKRILL} **SKRILL âžś** ${EMOJI_CRYPTO} **CRYPTO** â€” Prowizja wynosi: **9%**
+â€˘ ${EMOJI_SKRILL} **SKRILL âžś** ${EMOJI_LTC} **LTC** â€” Prowizja wynosi: **9%**
+
+â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
 
 ${EMOJI_ARROW} Minimalna prowizja wynosi: **3 PLN**
 `;

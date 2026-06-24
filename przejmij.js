@@ -87,7 +87,11 @@ module.exports = (client) => {
 
         interaction.channel.name.startsWith("crypto-") ||
 
-        interaction.channel.name.startsWith("ltc-");
+        interaction.channel.name.startsWith("ltc-") ||
+
+        interaction.channel.name.startsWith("psc-") ||
+
+        interaction.channel.name.startsWith("skrill-");
 
       // =====================================
       // /PRZEJMIJ
@@ -113,7 +117,7 @@ module.exports = (client) => {
 
               ephemeral: true
             });
-          }*/
+          }
 
           // ticket check
           if (!validTicket) {
@@ -128,7 +132,7 @@ module.exports = (client) => {
           }
 
           // already claimed disabled
-          /*if (
+          if (
             claimedTickets.has(
               interaction.channel.id
             )

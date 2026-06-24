@@ -189,6 +189,8 @@ module.exports = (client) => {
     paypal: "<:paypal:1499784258091483236>",
     crypto: "<:crypto:1499784635201224724>",
     ltc: "<:ltc:1499784285211726014>",
+    psc: ":MYPSC:",
+    skrill: ":SKRILL:",
     vinted: "🟦",
     zen: "⚪",
 
@@ -252,6 +254,17 @@ module.exports = (client) => {
     "LTC->KODBLIK": 4,
     "LTC->PAYPAL": 4,
     "LTC->CRYPTO": 4,
+    "PSC->BLIK": 11,
+    "PSC->KODBLIK": 11,
+    "PSC->PAYPAL": 11,
+    "PSC->CRYPTO": 13,
+    "PSC->LTC": 13,
+    "PSC->SKRILL": 11,
+    "SKRILL->BLIK": 9,
+    "SKRILL->KODBLIK": 9,
+    "SKRILL->PAYPAL": 9,
+    "SKRILL->CRYPTO": 9,
+    "SKRILL->LTC": 9,
     "VINTED->BLIK": 9,
     "VINTED->PAYPAL": 9,
     "VINTED->LTC": 9,
@@ -334,7 +347,13 @@ module.exports = (client) => {
       new StringSelectMenuOptionBuilder()
         .setLabel("CRYPTO")
         .setValue("CRYPTO")
-        .setEmoji({ id: "1499784635201224724" })
+        .setEmoji({ id: "1499784635201224724" }),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("PSC")
+        .setValue("PSC"),
+      new StringSelectMenuOptionBuilder()
+        .setLabel("SKRILL")
+        .setValue("SKRILL")
     ];
   }
 
@@ -357,7 +376,7 @@ module.exports = (client) => {
 
   function normalizeExchangeMethod(value) {
     const v = String(value || "").trim().toUpperCase().replace(/\s+/g, "");
-    if (["BLIK", "KODBLIK", "PAYPAL", "LTC", "CRYPTO"].includes(v)) return v;
+    if (["BLIK", "KODBLIK", "PAYPAL", "LTC", "CRYPTO", "PSC", "SKRILL"].includes(v)) return v;
     if (v === "KOD-BLIK" || v === "KOD_BLIK") return "KODBLIK";
     return null;
   }
@@ -380,6 +399,8 @@ module.exports = (client) => {
     if (v === "PAYPAL") return EMOJI.paypal;
     if (v === "LTC") return EMOJI.ltc;
     if (v === "CRYPTO") return EMOJI.crypto;
+    if (v === "PSC") return EMOJI.psc;
+    if (v === "SKRILL") return EMOJI.skrill;
     return EMOJI.money;
   }
 
@@ -727,7 +748,15 @@ module.exports = (client) => {
       }
 
       const exchange = `${from}->${to}`;
-      const percent = rates[exchange] || 4;
+      const percent = rates[exchange];
+
+      if (!percent) {
+        return interaction.reply({
+          content: `${EMOJI.warning} Nie moĹĽna wymieniÄ‡ tej metody.`,
+          ephemeral: true
+        });
+      }
+
       const afterFee = (Number(amount) * (1 - percent / 100)).toFixed(2);
 
       const exchangePayload = {
