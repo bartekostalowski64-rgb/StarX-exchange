@@ -220,7 +220,7 @@ ${EMOJI_ARROW} Minimalna prowizja wynosi: **3 PLN**
     // ==========================
     // PSC
     // ==========================
-    if (type === "PSC") {
+    if (false && type === "PSC") {
 
       desc = `
 â€˘ ${EMOJI_PSC} **PSC âžś** ${EMOJI_BLIK} **BLIK** â€” Prowizja wynosi: **11%**
@@ -239,7 +239,7 @@ ${EMOJI_ARROW} Minimalna prowizja wynosi: **3 PLN**
     // ==========================
     // SKRILL
     // ==========================
-    if (type === "SKRILL") {
+    if (false && type === "SKRILL") {
 
       desc = `
 â€˘ ${EMOJI_SKRILL} **SKRILL âžś** ${EMOJI_BLIK} **BLIK** â€” Prowizja wynosi: **9%**

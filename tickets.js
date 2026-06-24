@@ -791,7 +791,7 @@ module.exports = (client) => {
       const existing = interaction.guild.channels.cache.find(c => c.topic?.startsWith(interaction.user.id));
       if (existing) {
         return interaction.reply({
-          content: `${EMOJI.warning} Masz juĹĽ ticket: ${existing}`,
+          content: `${EMOJI.warning} Masz juz ticket: ${existing}`,
           ephemeral: true
         });
       }
@@ -855,7 +855,7 @@ module.exports = (client) => {
       });
 
       return interaction.reply({
-        content: `${EMOJI.ticket} Ticket zostaĹ‚ utworzony: ${channel}`,
+        content: `${EMOJI.ticket} Ticket zostal utworzony: ${channel}`,
         ephemeral: true
       });
     }
