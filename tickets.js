@@ -189,8 +189,8 @@ module.exports = (client) => {
     paypal: "<:paypal:1499784258091483236>",
     crypto: "<:crypto:1499784635201224724>",
     ltc: "<:ltc:1499784285211726014>",
-    psc: ":MYPSC:",
-    skrill: ":SKRILL:",
+    psc: "<:MYPSC:1519440223140970636>",
+    skrill: "<:SKRILL:1519440276492521472>",
     vinted: "🟦",
     zen: "⚪",
 
@@ -350,10 +350,12 @@ module.exports = (client) => {
         .setEmoji({ id: "1499784635201224724" }),
       new StringSelectMenuOptionBuilder()
         .setLabel("PSC")
-        .setValue("PSC"),
+        .setValue("PSC")
+        .setEmoji({ id: "1519440223140970636", name: "MYPSC" }),
       new StringSelectMenuOptionBuilder()
         .setLabel("SKRILL")
         .setValue("SKRILL")
+        .setEmoji({ id: "1519440276492521472", name: "SKRILL" })
     ];
   }
 

@@ -16,8 +16,8 @@ module.exports = async (client) => {
   const EMOJI_PAYPAL = "<:paypal:1499784258091483236>";
   const EMOJI_CRYPTO = "<:crypto:1499784635201224724>";
   const EMOJI_LTC = "<:ltc:1499784285211726014>";
-  const EMOJI_PSC = ":MYPSC:";
-  const EMOJI_SKRILL = ":SKRILL:";
+  const EMOJI_PSC = "<:MYPSC:1519440223140970636>";
+  const EMOJI_SKRILL = "<:SKRILL:1519440276492521472>";
 
   // ANIMOWANE
   const EMOJI_MONEY = "<a:money:1501685438103031920>";
@@ -101,11 +101,19 @@ ${EMOJI_BOX} Szybkie i przejrzyste prowizje.`
           },
           {
             label: "PSC",
-            value: "PSC"
+            value: "PSC",
+            emoji: {
+              id: "1519440223140970636",
+              name: "MYPSC"
+            }
           },
           {
             label: "SKRILL",
-            value: "SKRILL"
+            value: "SKRILL",
+            emoji: {
+              id: "1519440276492521472",
+              name: "SKRILL"
+            }
           }
         ]);
 
