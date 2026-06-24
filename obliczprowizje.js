@@ -5,7 +5,6 @@ const {
     ModalBuilder,
     TextInputBuilder,
     TextInputStyle,
-    LabelBuilder,
     Events
 } = require("discord.js");
 
@@ -105,72 +104,11 @@ module.exports = (client) => {
         return method;
     }
 
-    function getModalSelectValue(fields, customId) {
-        const field = fields?.fields?.get(customId) || fields?.getField?.(customId);
-        if (Array.isArray(field?.values) && field.values.length) return field.values[0];
-        if (typeof field?.value === "string") return field.value;
-        return "";
-    }
-
-    function methodOptions() {
-        return [
-            {
-                label: "BLIK",
-                value: "BLIK",
-                emoji: {
-                    id: "1499784231608389742",
-                    name: "blik"
-                }
-            },
-            {
-                label: "KOD BLIK",
-                value: "KODBLIK",
-                emoji: {
-                    id: "1499784231608389742",
-                    name: "blik"
-                }
-            },
-            {
-                label: "PAYPAL",
-                value: "PAYPAL",
-                emoji: {
-                    id: "1499784258091483236",
-                    name: "paypal"
-                }
-            },
-            {
-                label: "LTC",
-                value: "LTC",
-                emoji: {
-                    id: "1499784285211726014",
-                    name: "ltc"
-                }
-            },
-            {
-                label: "CRYPTO",
-                value: "CRYPTO",
-                emoji: {
-                    id: "1499784635201224724",
-                    name: "crypto"
-                }
-            },
-            {
-                label: "PSC",
-                value: "PSC",
-                emoji: {
-                    id: "1519440223140970636",
-                    name: "MYPSC"
-                }
-            },
-            {
-                label: "SKRILL",
-                value: "SKRILL",
-                emoji: {
-                    id: "1519440276492521472",
-                    name: "SKRILL"
-                }
-            }
-        ];
+    function normalizeMethod(value) {
+        const v = String(value || "").trim().toUpperCase().replace(/[\s_-]+/g, "");
+        if (v === "KODBLIK" || v === "KODUBLIK") return "KODBLIK";
+        if (["BLIK", "PAYPAL", "CRYPTO", "LTC", "PSC", "SKRILL"].includes(v)) return v;
+        return null;
     }
 
     function createCalcModal(type) {
@@ -185,34 +123,24 @@ module.exports = (client) => {
             .setStyle(TextInputStyle.Short)
             .setRequired(true);
 
-        const amountLabel = new LabelBuilder()
-            .setLabel("KWOTA")
-            .setTextInputComponent(amountInput);
+        const fromInput = new TextInputBuilder()
+            .setCustomId("calc_from_text")
+            .setLabel("Z czego")
+            .setPlaceholder("Np. BLIK, KOD BLIK, PAYPAL, PSC, SKRILL")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true);
 
-        const fromSelect = new StringSelectMenuBuilder()
-            .setCustomId("calc_from_modal")
-            .setPlaceholder("Z jakiej metody?")
-            .setRequired(true)
-            .addOptions(methodOptions());
+        const toInput = new TextInputBuilder()
+            .setCustomId("calc_to_text")
+            .setLabel("Na co")
+            .setPlaceholder("Np. LTC, CRYPTO, PAYPAL, BLIK")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true);
 
-        const fromLabel = new LabelBuilder()
-            .setLabel("Z CZEGO")
-            .setStringSelectMenuComponent(fromSelect);
-
-        const toSelect = new StringSelectMenuBuilder()
-            .setCustomId("calc_to_modal")
-            .setPlaceholder("Na jaka metode?")
-            .setRequired(true)
-            .addOptions(methodOptions());
-
-        const toLabel = new LabelBuilder()
-            .setLabel("NA CO")
-            .setStringSelectMenuComponent(toSelect);
-
-        return modal.addLabelComponents(
-            amountLabel,
-            fromLabel,
-            toLabel
+        return modal.addComponents(
+            new ActionRowBuilder().addComponents(amountInput),
+            new ActionRowBuilder().addComponents(fromInput),
+            new ActionRowBuilder().addComponents(toInput)
         );
     }
 
@@ -238,6 +166,18 @@ ${EMOJI_ARROW} Minimalna prowizja wynosi: **3 PLN**
 
 ${EMOJI_BOX} Kliknij menu poniżej.
             `)
+            .setTitle("StarX Exchange » OBLICZ PROWIZJE")
+            .setDescription([
+                `${EMOJI_MONEY} Oblicz ile dostaniesz lub ile musisz wplacic.`,
+                "",
+                "━━━━━━━━━━━━━━━━━━━━━━━",
+                "",
+                `${EMOJI_ARROW} Minimalna prowizja wynosi: **3 PLN**`,
+                "",
+                "━━━━━━━━━━━━━━━━━━━━━━━",
+                "",
+                `${EMOJI_BOX} Kliknij menu ponizej.`
+            ].join("\n"))
             .setFooter({
                 text: "© 2026 StarX Exchange x Kalkulator"
             });
@@ -257,6 +197,29 @@ ${EMOJI_BOX} Kliknij menu poniżej.
                 },
                 {
                     label: "Ile muszę wpłacić aby dostać X?",
+                    value: "wplace",
+                    emoji: {
+                        id: "1508094625984811038",
+                        name: "Arrow_White",
+                        animated: true
+                    }
+                }
+            ]);
+
+        menu
+            .setPlaceholder("Wybierz opcje")
+            .setOptions([
+                {
+                    label: "Jaka kwote otrzymam?",
+                    value: "otrzymam",
+                    emoji: {
+                        id: "1501685438103031920",
+                        name: "money",
+                        animated: true
+                    }
+                },
+                {
+                    label: "Ile musze wplacic aby dostac X?",
                     value: "wplace",
                     emoji: {
                         id: "1508094625984811038",
@@ -481,13 +444,21 @@ ${EMOJI_BOX} Kliknij menu poniżej.
 
             if (interaction.customId.startsWith("calc_full_modal_")) {
                 const type = interaction.customId.replace("calc_full_modal_", "");
-                const from = getModalSelectValue(interaction.fields, "calc_from_modal");
-                const to = getModalSelectValue(interaction.fields, "calc_to_modal");
+                const from = normalizeMethod(interaction.fields.getTextInputValue("calc_from_text"));
+                const to = normalizeMethod(interaction.fields.getTextInputValue("calc_to_text"));
+
+                if (!from || !to) {
+                    return interaction.reply({
+                        content: "Podaj poprawne metody, np. BLIK, KOD BLIK, PAYPAL, LTC, CRYPTO, PSC albo SKRILL.",
+                        flags: 64
+                    });
+                }
+
                 const key = `${from}_${to}`;
 
                 if (!rates[key]) {
                     return interaction.reply({
-                        content: "Nie moĹĽna wymieniÄ‡ tej metody.",
+                        content: "Nie mozna wymienic tej metody.",
                         flags: 64
                     });
                 }
@@ -501,7 +472,7 @@ ${EMOJI_BOX} Kliknij menu poniżej.
 
                 if (isNaN(kwota) || kwota <= 0) {
                     return interaction.reply({
-                        content: "Podano nieprawidĹ‚owÄ… kwotÄ™.",
+                        content: "Podano nieprawidlowa kwote.",
                         flags: 64
                     });
                 }
@@ -518,7 +489,7 @@ ${EMOJI_BOX} Kliknij menu poniżej.
 
                 const embed = new EmbedBuilder()
                     .setColor("#1b2dff")
-                    .setTitle("đźŚź StarX Exchange Â» WYNIK")
+                    .setTitle("🌟 StarX Exchange » WYNIK")
                     .setDescription(`
 ${emoji(from)} **Z:** ${methodName(from)}
 
@@ -532,7 +503,7 @@ ${EMOJI_ARROW} **Minimalna prowizja:** 3 PLN
 ${EMOJI_MONEY} **Wynik:** \`${wynik.toFixed(2)} PLN\`
                     `)
                     .setFooter({
-                        text: "Â© 2026 StarX Exchange x Kalkulator"
+                        text: "© 2026 StarX Exchange x Kalkulator"
                     });
 
                 return interaction.reply({

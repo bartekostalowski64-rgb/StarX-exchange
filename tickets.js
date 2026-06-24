@@ -176,6 +176,22 @@ module.exports = (client) => {
       );
   }
 
+  function createMiddlemanLegitModal() {
+    return new ModalBuilder()
+      .setCustomId("middleman_legit_modal")
+      .setTitle("Legit check middleman")
+      .addComponents(
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId("middleman_legit_amount")
+            .setLabel("Kwota")
+            .setPlaceholder("Np. 100")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true)
+        )
+      );
+  }
+
   // =========================================
   // EMOJI
   // =========================================
@@ -822,15 +838,15 @@ module.exports = (client) => {
 
       const embed = new EmbedBuilder()
         .setColor(EMBED_COLOR)
-        .setTitle(`${EMOJI.middleman} đźŚź StarX Exchange Ă— MIDDLEMAN`)
+        .setTitle(`${EMOJI.middleman} StarX Exchange x MIDDLEMAN`)
         .setDescription([
-          `> ${EMOJI.arrow} UĹĽytkownik ${interaction.user} utworzyĹ‚ ticket middleman.`,
+          `> ${EMOJI.arrow} Uzytkownik ${interaction.user} utworzyl ticket middleman.`,
           `> ${EMOJI.arrow} Dodana osoba: <@${otherUserId}>`,
           ``,
-          `> ${EMOJI.arrow} Realizator odpowie najszybciej jak to moĹĽliwe`
+          `> ${EMOJI.arrow} Realizator odpowie najszybciej jak to mozliwe.`
         ].join("\n"))
         .setImage(BANNER_TICKET_URL)
-        .setFooter({ text: "Â© 2026 StarX Exchange" });
+        .setFooter({ text: "(c) 2026 StarX Exchange" });
 
       await channel.send({
         content: `${interaction.user} <@${otherUserId}> <@&${REALIZATOR_ROLE_ID}>`,
@@ -880,7 +896,7 @@ module.exports = (client) => {
 
       if (!percent) {
         return interaction.reply({
-          content: `${EMOJI.warning} Nie moĹĽna wymieniÄ‡ tej metody.`,
+          content: `${EMOJI.warning} Nie mozna wymienic tej metody.`,
           ephemeral: true
         });
       }
@@ -1119,6 +1135,71 @@ module.exports = (client) => {
     }
 
     // =========================
+    // MIDDLEMAN LEGIT MODAL
+    // =========================
+    if (interaction.isModalSubmit() && interaction.customId === "middleman_legit_modal") {
+      if (!interaction.member.roles.cache.has(REALIZATOR_ROLE_ID)) {
+        return interaction.reply({
+          content: `${EMOJI.warning} Tylko realizator moze wyslac legit check.`,
+          ephemeral: true
+        });
+      }
+
+      const topicParts = String(interaction.channel.topic || "").split(":");
+      const clientId = topicParts?.[0];
+      const claimedUserId = claimedTickets.get(interaction.channel.id) || interaction.user.id;
+      const amountRaw = interaction.fields.getTextInputValue("middleman_legit_amount").trim().replace(",", ".");
+      const amountNumber = Number(amountRaw);
+      const amountText = Number.isFinite(amountNumber) ? `${amountNumber.toFixed(0)}PLN` : `${amountRaw}PLN`;
+      const legitText = `+rep <@${claimedUserId}> Middleman ${amountText}`;
+
+      if (clientId) {
+        await giveClientRoleById(interaction.guild, clientId);
+        pendingLegitTickets.set(clientId, interaction.channel.id);
+      }
+
+      await interaction.reply({
+        content: clientId ? `<@${clientId}>` : undefined,
+        embeds: [
+          new EmbedBuilder()
+            .setColor(EMBED_COLOR)
+            .setTitle("StarX Exchange x WYSTAW LEGIT CHECKA")
+            .setDescription([
+              `> ${EMOJI.arrow} Dziekujemy ${clientId ? `<@${clientId}>` : ""} za skorzystanie z middlemana.`,
+              "",
+              `> ${EMOJI.arrow} Wystaw legit checka na kanale <#${LEGIT_CHECK_CHANNEL_ID}>`,
+              "",
+              `> ${EMOJI.arrow} Wzor:`,
+              "```text",
+              legitText,
+              "```",
+              "",
+              `> ${EMOJI.arrow} Po wystawieniu legit checka ticket zostanie automatycznie zamkniety.`
+            ].join("\n"))
+            .setImage(BANNER_LEGIT_URL)
+            .setFooter({ text: "(c) 2026 StarX Exchange" })
+        ]
+      });
+
+      try {
+        const sendTempPing = async (channelId) => {
+          if (!clientId || !channelId) return;
+          const channel = await interaction.client.channels.fetch(channelId).catch(() => null);
+          if (!channel?.isTextBased()) return;
+          const msg = await channel.send({ content: `<@${clientId}>` }).catch(() => null);
+          if (msg) setTimeout(() => msg.delete().catch(() => {}), 1000);
+        };
+
+        await sendTempPing(LEGIT_CHECK_CHANNEL_ID);
+        await sendTempPing(REACTION_LEGIT_CHANNEL_ID);
+      } catch (err) {
+        console.log("MIDDLEMAN LEGIT PING ERROR:", err);
+      }
+
+      return;
+    }
+
+    // =========================
     // SEND LEGIT CHECK BUTTON
     // =========================
     if (interaction.isButton() && interaction.customId === "send_legit_check") {
@@ -1134,6 +1215,10 @@ module.exports = (client) => {
 
       if (ticketType === "buy") {
         return interaction.showModal(createPurchaseLegitModal());
+      }
+
+      if (ticketType === "middleman") {
+        return interaction.showModal(createMiddlemanLegitModal());
       }
 
       const clientId = topicParts?.[0];
