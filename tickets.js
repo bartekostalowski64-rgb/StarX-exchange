@@ -22,16 +22,16 @@ module.exports = (client) => {
   const PANEL_CHANNEL_ID = "1509429804770791494";
   const REALIZATOR_ROLE_ID = "1500930428993933373";
   const CLIENT_ROLE_ID = "1499572498604363918";
-  // KanaĹ‚, na ktĂłrym klient ma wystawiÄ‡ legit checka / dostaÄ‡ ping
+  // Kanał, na którym klient ma wystawić legit checka / dostać ping
   const LEGIT_CHECK_CHANNEL_ID = "1500893110048133253";
-  // KanaĹ‚ z reakcjami / stary kanaĹ‚ legit-check, zostawiony jako fallback do pinga
+  // Kanał z reakcjami / stary kanał legit-check, zostawiony jako fallback do pinga
   const REACTION_LEGIT_CHANNEL_ID = "1499519884860854505";
   const OPINIE_CHANNEL_ID = "1499519935657935049";
   const CATEGORY_CLAIMED_ID = "1510410009853431868";
   const CATEGORY_UNCLAIMED_ID = "1510410325038727311";
 
 
-  // UZUPEĹNIJ SWOJE DANE PĹATNOĹšCI
+  // UZUPEŁNIJ SWOJE DANE PŁATNOŚCI
   const PAYMENT = {
     blik: {
       number: "780 130 528",
@@ -40,7 +40,7 @@ module.exports = (client) => {
     }
   };
 
-  // PodmieĹ„ linki na swoje bannery z obrazkĂłw jak na screenach
+  // Podmień linki na swoje bannery z obrazków jak na screenach
   const BANNER_TICKET_URL = process.env.BANNER_TICKET_URL || "https://i.imgur.com/QYhsGEm_d.webp?maxwidth=760&fidelity=grand";
   const BANNER_LEGIT_URL = process.env.BANNER_LEGIT_URL || "https://i.imgur.com/QYhsGEm_d.webp?maxwidth=760&fidelity=grand";
 
@@ -82,7 +82,7 @@ module.exports = (client) => {
     return String(name || "ticket")
       .toLowerCase()
       .replace(/[\s_]+/g, "-")
-      .replace(/[^a-z0-9Ä…Ä‡Ä™Ĺ‚Ĺ„ĂłĹ›ĹşĹĽ-]/gi, "")
+      .replace(/[^a-z0-9ąćęłńóśźż-]/gi, "")
       .replace(/-+/g, "-")
       .replace(/^-|-$/g, "")
       .slice(0, 85) || "ticket";
@@ -131,7 +131,7 @@ module.exports = (client) => {
         new ActionRowBuilder().addComponents(
           new TextInputBuilder()
             .setCustomId("purchase_item")
-            .setLabel("Co kupiĹ‚ klient?")
+            .setLabel("Co kupił klient?")
             .setPlaceholder("Np. YT Premium FA [LIFETIME]")
             .setStyle(TextInputStyle.Short)
             .setRequired(true)
@@ -147,7 +147,7 @@ module.exports = (client) => {
         new ActionRowBuilder().addComponents(
           new TextInputBuilder()
             .setCustomId("purchase_method")
-            .setLabel("Metoda pĹ‚atnoĹ›ci")
+            .setLabel("Metoda płatności")
             .setPlaceholder("Np. PSC / BLIK / PAYPAL / LTC")
             .setStyle(TextInputStyle.Short)
             .setRequired(true)
@@ -228,8 +228,8 @@ module.exports = (client) => {
     ltc: "<:ltc:1499784285211726014>",
     psc: "<:MYPSC:1519440223140970636>",
     skrill: "<:SKRILL:1519440276492521472>",
-    vinted: "đźź¦",
-    zen: "âšŞ",
+    vinted: "🟦",
+    zen: "⚪",
 
     // =========================
     // SHOP / STREAMING
@@ -331,20 +331,20 @@ module.exports = (client) => {
 
         .setCustomId("ticket_select")
 
-        .setPlaceholder("đźŽ« Wybierz kategoriÄ™")
+        .setPlaceholder("🎫 Wybierz kategorię")
 
         .addOptions([
 
           {
             label: "Wymiana waluty",
-            description: "Wymiana metod pĹ‚atnoĹ›ci",
+            description: "Wymiana metod płatności",
             value: "exchange",
             emoji: { id: "1500243849535033577" }
           },
 
           {
             label: "Zakup",
-            description: "Kupno produktu/usĹ‚ugi",
+            description: "Kupno produktu/usługi",
             value: "buy",
             emoji: { id: "1500243849535033577" }
           },
@@ -358,7 +358,7 @@ module.exports = (client) => {
 
           {
             label: "Middleman",
-            description: "UsĹ‚uga poĹ›rednika",
+            description: "Usługa pośrednika",
             value: "middleman",
             emoji: { id: "1500243884733894716" }
           }
@@ -405,15 +405,15 @@ module.exports = (client) => {
       new StringSelectMenuOptionBuilder()
         .setLabel("PLN")
         .setValue("PLN")
-        .setEmoji("đź‡µđź‡±"),
+        .setEmoji("🇵🇱"),
       new StringSelectMenuOptionBuilder()
         .setLabel("EUR")
         .setValue("EUR")
-        .setEmoji("đź‡Şđź‡ş"),
+        .setEmoji("🇪🇺"),
       new StringSelectMenuOptionBuilder()
         .setLabel("USD")
         .setValue("USD")
-        .setEmoji("đź‡şđź‡¸")
+        .setEmoji("🇺🇸")
     ];
   }
 
@@ -449,10 +449,10 @@ module.exports = (client) => {
 
   function currencyEmoji(value) {
     const v = normalizeCurrency(value);
-    if (v === "PLN") return "đź‡µđź‡±";
-    if (v === "EUR") return "đź‡Şđź‡ş";
-    if (v === "USD") return "đź‡şđź‡¸";
-    return "đź’±";
+    if (v === "PLN") return "🇵🇱";
+    if (v === "EUR") return "🇪🇺";
+    if (v === "USD") return "🇺🇸";
+    return "💱";
   }
 
   function getExchangeInfoFromTicket(channel) {
@@ -504,7 +504,7 @@ module.exports = (client) => {
 
     const fromSelect = new StringSelectMenuBuilder()
       .setCustomId("exchange_from")
-      .setPlaceholder("Ă— Nie wybraĹ‚eĹ›/aĹ› ĹĽadnej opcji.")
+      .setPlaceholder("× Nie wybrałeś/aś żadnej opcji.")
       .setRequired(true)
       .addOptions(exchangeMethodOptions());
 
@@ -514,7 +514,7 @@ module.exports = (client) => {
 
     const toSelect = new StringSelectMenuBuilder()
       .setCustomId("exchange_to")
-      .setPlaceholder("Ă— Nie wybraĹ‚eĹ›/aĹ› ĹĽadnej opcji.")
+      .setPlaceholder("× Nie wybrałeś/aś żadnej opcji.")
       .setRequired(true)
       .addOptions(exchangeMethodOptions());
 
@@ -529,7 +529,7 @@ module.exports = (client) => {
       .addOptions(currencyOptions());
 
     const currencyLabel = new LabelBuilder()
-      .setLabel("JAKÄ„ WALUTÄ POSIADASZ:")
+      .setLabel("JAKĄ WALUTĘ POSIADASZ:")
       .setStringSelectMenuComponent(currencySelect);
 
     return modal.addLabelComponents(
@@ -556,12 +556,12 @@ module.exports = (client) => {
         .setColor(EMBED_COLOR)
 
         .setTitle(
-          `${EMOJI.ticket} đźŚź StarX Exchange Â» WYMIANA`
+          `${EMOJI.ticket} 🌟 StarX Exchange » WYMIANA`
         )
 
         .setDescription([
 
-          `> ${EMOJI.arrow} Wybierz kategoriÄ™ z menu poniĹĽej`,
+          `> ${EMOJI.arrow} Wybierz kategorię z menu poniżej`,
           `> ${EMOJI.arrow} Szybka i bezpieczna wymiana`,
           `> ${EMOJI.arrow} Prywatny ticket z realizatorem`,
           `> ${EMOJI.arrow} Automatyczne obliczenie prowizji`
@@ -581,14 +581,14 @@ module.exports = (client) => {
       components: [createMenu()]
     });
 
-    console.log("âś… Panel ticketĂłw wysĹ‚any.");
+    console.log("✅ Panel ticketów wysłany.");
   });
 
   // =========================================
   // INTERACTIONS
   // =========================================
-  // Po tym jak klient faktycznie wyĹ›le legit checka na kanaĹ‚ LC,
-  // dopiero wtedy zabierz mu dostÄ™p do ticketa. DziÄ™ki temu moĹĽe skopiowaÄ‡ wzĂłr z ticketa.
+  // Po tym jak klient faktycznie wyśle legit checka na kanał LC,
+  // dopiero wtedy zabierz mu dostęp do ticketa. Dzięki temu może skopiować wzór z ticketa.
   client.on(Events.MessageCreate, async (message) => {
     try {
       if (message.author.bot) return;
@@ -638,7 +638,7 @@ module.exports = (client) => {
 
       if (existing)
         return interaction.reply({
-          content: `${EMOJI.warning} Masz juĹĽ ticket: ${existing}`,
+          content: `${EMOJI.warning} Masz już ticket: ${existing}`,
           ephemeral: true
         });
 
@@ -711,7 +711,7 @@ module.exports = (client) => {
         });
 
       // Rola Klient NIE jest nadawana przy utworzeniu ticketa.
-      // Dostanie jÄ… dopiero kupujÄ…cy po wysĹ‚aniu wiadomoĹ›ci LC.
+      // Dostanie ją dopiero kupujący po wysłaniu wiadomości LC.
 
       // =====================================
       // BUTTON
@@ -727,17 +727,17 @@ module.exports = (client) => {
           .setColor(EMBED_COLOR)
 
           .setTitle(
-            `${EMOJI.ticket} đźŚź StarX Exchange Ă— ${categoryName.toUpperCase()}`
+            `${EMOJI.ticket} 🌟 StarX Exchange × ${categoryName.toUpperCase()}`
           )
 
           .setDescription([
 
-            `> ${EMOJI.arrow} UĹĽytkownik ${interaction.user} utworzyĹ‚ ticket`,
+            `> ${EMOJI.arrow} Użytkownik ${interaction.user} utworzył ticket`,
             `> ${EMOJI.arrow} Kategoria: \`${categoryName}\``,
 
             ``,
 
-            `> ${EMOJI.arrow} Realizator odpowie najszybciej jak to moĹĽliwe`
+            `> ${EMOJI.arrow} Realizator odpowie najszybciej jak to możliwe`
 
           ].join("\n"))
           .setImage(BANNER_TICKET_URL)
@@ -758,7 +758,7 @@ module.exports = (client) => {
 
       return interaction.reply({
         content:
-          `${EMOJI.ticket} Ticket zostaĹ‚ utworzony: ${channel}`,
+          `${EMOJI.ticket} Ticket został utworzony: ${channel}`,
         ephemeral: true
       });
     }
@@ -875,14 +875,14 @@ module.exports = (client) => {
 
       if (!amount || isNaN(amount)) {
         return interaction.reply({
-          content: `${EMOJI.warning} Kwota musi byÄ‡ liczbÄ….`,
+          content: `${EMOJI.warning} Kwota musi być liczbą.`,
           ephemeral: true
         });
       }
 
       if (!from || !to) {
         return interaction.reply({
-          content: `${EMOJI.warning} Wybierz poprawne metody pĹ‚atnoĹ›ci.`,
+          content: `${EMOJI.warning} Wybierz poprawne metody płatności.`,
           ephemeral: true
         });
       }
@@ -890,7 +890,7 @@ module.exports = (client) => {
       const existing = interaction.guild.channels.cache.find(c => c.topic?.startsWith(interaction.user.id));
       if (existing) {
         return interaction.reply({
-          content: `${EMOJI.warning} Masz juĹĽ ticket: ${existing}`,
+          content: `${EMOJI.warning} Masz już ticket: ${existing}`,
           ephemeral: true
         });
       }
@@ -948,12 +948,12 @@ module.exports = (client) => {
 
       const embed = new EmbedBuilder()
         .setColor(EMBED_COLOR)
-        .setTitle(`${EMOJI.money} đźŚź StarX Exchange Ă— WYMIANA WALUTY`)
+        .setTitle(`${EMOJI.money} 🌟 StarX Exchange × WYMIANA WALUTY`)
         .setDescription([
-          `> ${EMOJI.arrow} UĹĽytkownik ${interaction.user} utworzyĹ‚ ticket wymiany.`,
-          `> ${EMOJI.arrow} Realizator odpowie najszybciej jak to moĹĽliwe.`,
+          `> ${EMOJI.arrow} Użytkownik ${interaction.user} utworzył ticket wymiany.`,
+          `> ${EMOJI.arrow} Realizator odpowie najszybciej jak to możliwe.`,
           ``,
-          `â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”`,
+          `━━━━━━━━━━━━━━━━━━━━━━━`,
           ``,
           `${EMOJI.money} **JAKA KWOTA:**`,
           `> ${formatCurrency(amount, currency)}`,
@@ -964,7 +964,7 @@ module.exports = (client) => {
           `${methodEmoji(to)} **NA CO:**`,
           `> ${displayExchangeMethod(to)}`,
           ``,
-          `${currencyEmoji(currency)} **JAKÄ„ WALUTÄ POSIADASZ:**`,
+          `${currencyEmoji(currency)} **JAKĄ WALUTĘ POSIADASZ:**`,
           `> ${currency}`,
           ``,
           `${EMOJI.zap} **PROWIZJA:**`,
@@ -985,7 +985,7 @@ module.exports = (client) => {
       });
 
       return interaction.reply({
-        content: `${EMOJI.ticket} Ticket zostaĹ‚ utworzony: ${channel}`,
+        content: `${EMOJI.ticket} Ticket został utworzony: ${channel}`,
         ephemeral: true
       });
     }
@@ -996,11 +996,11 @@ module.exports = (client) => {
     // =========================
     if (interaction.isButton() && interaction.customId === "claim_ticket") {
       if (!interaction.member.roles.cache.has(REALIZATOR_ROLE_ID)) {
-        return interaction.reply({ content: `${EMOJI.warning} Nie jesteĹ› realizatorem.`, ephemeral: true });
+        return interaction.reply({ content: `${EMOJI.warning} Nie jesteś realizatorem.`, ephemeral: true });
       }
 
       if (claimedTickets.has(interaction.channel.id)) {
-        return interaction.reply({ content: `${EMOJI.warning} Ticket jest juĹĽ przejÄ™ty.`, ephemeral: true });
+        return interaction.reply({ content: `${EMOJI.warning} Ticket jest już przejęty.`, ephemeral: true });
       }
 
       claimedTickets.set(interaction.channel.id, interaction.user.id);
@@ -1018,9 +1018,9 @@ module.exports = (client) => {
 
       const embed = new EmbedBuilder()
         .setColor(EMBED_COLOR)
-        .setTitle("đźŚź StarX Exchange Ă— TICKET PRZEJÄTY")
+        .setTitle("🌟 StarX Exchange × TICKET PRZEJĘTY")
         .setDescription(
-          `> ${EMOJI.arrow} TwĂłj ticket zostaĹ‚ przejÄ™ty przez: ${interaction.user}`
+          `> ${EMOJI.arrow} Twój ticket został przejęty przez: ${interaction.user}`
         )
         .setFooter({ text: "© 2026 StarX Exchange" });
 
@@ -1037,13 +1037,13 @@ module.exports = (client) => {
     // =========================
     if (interaction.isButton() && interaction.customId === "unclaim_ticket") {
       if (!interaction.member.roles.cache.has(REALIZATOR_ROLE_ID)) {
-        return interaction.reply({ content: `${EMOJI.warning} Nie jesteĹ› realizatorem.`, ephemeral: true });
+        return interaction.reply({ content: `${EMOJI.warning} Nie jesteś realizatorem.`, ephemeral: true });
       }
 
       const claimedUserId = claimedTickets.get(interaction.channel.id);
       if (!claimedUserId) {
         await interaction.message.edit({ components: [ticketButtons(false)] }).catch(() => {});
-        return interaction.reply({ content: `${EMOJI.warning} Ticket nie jest przejÄ™ty.`, ephemeral: true });
+        return interaction.reply({ content: `${EMOJI.warning} Ticket nie jest przejęty.`, ephemeral: true });
       }
 
       await interaction.channel.permissionOverwrites.edit(REALIZATOR_ROLE_ID, {
@@ -1061,8 +1061,8 @@ module.exports = (client) => {
 
       const embed = new EmbedBuilder()
         .setColor(EMBED_COLOR)
-        .setTitle("đźŚź StarX Exchange Ă— TICKET ODPRZYJÄTY")
-        .setDescription(`> ${EMOJI.arrow} Ticket zostaĹ‚ odprzyjÄ™ty przez: ${interaction.user}`)
+        .setTitle("🌟 StarX Exchange × TICKET ODPRZYJĘTY")
+        .setDescription(`> ${EMOJI.arrow} Ticket został odprzyjęty przez: ${interaction.user}`)
         .setFooter({ text: "© 2026 StarX Exchange" });
 
       return interaction.reply({ embeds: [embed] });
@@ -1075,7 +1075,7 @@ module.exports = (client) => {
     if (interaction.isModalSubmit() && interaction.customId === "purchase_legit_modal") {
       if (!interaction.member.roles.cache.has(REALIZATOR_ROLE_ID)) {
         return interaction.reply({
-          content: `${EMOJI.warning} Tylko realizator moĹĽe wysĹ‚aÄ‡ legit check.`,
+          content: `${EMOJI.warning} Tylko realizator może wysłać legit check.`,
           ephemeral: true
         });
       }
@@ -1101,19 +1101,19 @@ module.exports = (client) => {
         embeds: [
           new EmbedBuilder()
             .setColor(EMBED_COLOR)
-            .setTitle("đźŚź StarX Exchange Ă— WYSTAW LEGIT CHECKA")
+            .setTitle("🌟 StarX Exchange × WYSTAW LEGIT CHECKA")
             .setDescription([
-              `> ${EMOJI.arrow} DziÄ™kujemy ${clientId ? `<@${clientId}>` : ""} za **skorzystanie z naszych usĹ‚ug**.`,
-              `> ${EMOJI.arrow} Mamy nadziejÄ™, ĹĽe to **nie ostatni raz**!`,
+              `> ${EMOJI.arrow} Dziękujemy ${clientId ? `<@${clientId}>` : ""} za **skorzystanie z naszych usług**.`,
+              `> ${EMOJI.arrow} Mamy nadzieję, że to **nie ostatni raz**!`,
               "",
-              `> ${EMOJI.arrow} Prosimy, abyĹ› **wystawiĹ‚ legit checka** na kanale <#${LEGIT_CHECK_CHANNEL_ID}>`,
+              `> ${EMOJI.arrow} Prosimy, abyś **wystawił legit checka** na kanale <#${LEGIT_CHECK_CHANNEL_ID}>`,
               "",
-              `> ${EMOJI.arrow} **WzĂłr:**`,
+              `> ${EMOJI.arrow} **Wzór:**`,
               "```text",
               legitText,
               "```",
               "",
-              `> ${EMOJI.arrow} Po wystawieniu legit checka ticket zostanie **automatycznie zamkniÄ™ty**.`
+              `> ${EMOJI.arrow} Po wystawieniu legit checka ticket zostanie **automatycznie zamknięty**.`
             ].join("\n"))
             .setImage(BANNER_LEGIT_URL)
             .setFooter({ text: "© 2026 StarX Exchange" })
@@ -1209,7 +1209,7 @@ module.exports = (client) => {
     if (interaction.isButton() && interaction.customId === "send_legit_check") {
       if (!interaction.member.roles.cache.has(REALIZATOR_ROLE_ID)) {
         return interaction.reply({
-          content: `${EMOJI.warning} Tylko realizator moĹĽe wysĹ‚aÄ‡ legit check.`,
+          content: `${EMOJI.warning} Tylko realizator może wysłać legit check.`,
           ephemeral: true
         });
       }
@@ -1241,19 +1241,19 @@ module.exports = (client) => {
         embeds: [
           new EmbedBuilder()
             .setColor(EMBED_COLOR)
-            .setTitle("đźŚź StarX Exchange Ă— WYSTAW LEGIT CHECKA")
+            .setTitle("🌟 StarX Exchange × WYSTAW LEGIT CHECKA")
             .setDescription([
-              `> ${EMOJI.arrow} DziÄ™kujemy ${clientId ? `<@${clientId}>` : ""} za **skorzystanie z naszych usĹ‚ug**.`,
-              `> ${EMOJI.arrow} Mamy nadziejÄ™, ĹĽe to **nie ostatni raz**!`,
+              `> ${EMOJI.arrow} Dziękujemy ${clientId ? `<@${clientId}>` : ""} za **skorzystanie z naszych usług**.`,
+              `> ${EMOJI.arrow} Mamy nadzieję, że to **nie ostatni raz**!`,
               "",
-              `> ${EMOJI.arrow} Prosimy, abyĹ› **wystawiĹ‚ legit checka** na kanale <#${LEGIT_CHECK_CHANNEL_ID}>`,
+              `> ${EMOJI.arrow} Prosimy, abyś **wystawił legit checka** na kanale <#${LEGIT_CHECK_CHANNEL_ID}>`,
               "",
-              `> ${EMOJI.arrow} **WzĂłr:**`,
+              `> ${EMOJI.arrow} **Wzór:**`,
               "```text",
               legitText,
               "```",
               "",
-              `> ${EMOJI.arrow} Po wystawieniu legit checka ticket zostanie **automatycznie zamkniÄ™ty**.`
+              `> ${EMOJI.arrow} Po wystawieniu legit checka ticket zostanie **automatycznie zamknięty**.`
             ].join("\n"))
             .setImage(BANNER_LEGIT_URL)
             .setFooter({ text: "© 2026 StarX Exchange" })
@@ -1287,13 +1287,13 @@ module.exports = (client) => {
     ) {
       if (!interaction.member.roles.cache.has(REALIZATOR_ROLE_ID)) {
         return interaction.reply({
-          content: `${EMOJI.warning} Tylko realizator moĹĽe zamknÄ…Ä‡ ticket.`,
+          content: `${EMOJI.warning} Tylko realizator może zamknąć ticket.`,
           ephemeral: true
         });
       }
 
       await interaction.reply({
-        content: `${EMOJI.lock} Ticket zostanie zamkniÄ™ty.`,
+        content: `${EMOJI.lock} Ticket zostanie zamknięty.`,
         ephemeral: true
       }).catch(() => {});
 
