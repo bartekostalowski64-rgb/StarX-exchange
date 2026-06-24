@@ -10,7 +10,7 @@ module.exports = (client) => {
 
   const CHANNEL_ID = "1499519884860854505";
 
-  let yesVotes = 18;
+  let yesVotes = 19;
   let noVotes = 1;
 
   let legitMessageId = null;
