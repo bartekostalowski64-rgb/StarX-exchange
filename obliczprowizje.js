@@ -1,4 +1,4 @@
-const {
+﻿const {
     EmbedBuilder,
     ActionRowBuilder,
     StringSelectMenuBuilder,
@@ -179,7 +179,7 @@ module.exports = (client) => {
                 "",
                 `${EMOJI.arrow} Minimalna prowizja wynosi: **3 PLN**`
             ].join("\n"))
-            .setFooter({ text: "(c) 2026 StarX Exchange" });
+            .setFooter({ text: "© 2026 StarX Exchange" });
 
         const menu = new StringSelectMenuBuilder()
             .setCustomId("calc_type")
@@ -265,7 +265,7 @@ module.exports = (client) => {
                 "",
                 `${EMOJI.money} **Wynik:** \`${result.toFixed(2)} PLN\``
             ].join("\n"))
-            .setFooter({ text: "(c) 2026 StarX Exchange x Kalkulator" });
+            .setFooter({ text: "© 2026 StarX Exchange x Kalkulator" });
 
         return interaction.reply({
             embeds: [embed],
@@ -273,3 +273,4 @@ module.exports = (client) => {
         });
     });
 };
+

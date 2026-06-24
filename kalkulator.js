@@ -1,4 +1,4 @@
-const {
+﻿const {
   EmbedBuilder,
   ActionRowBuilder,
   StringSelectMenuBuilder,
@@ -94,7 +94,7 @@ module.exports = async (client) => {
         "",
         `${EMOJI.box} Szybkie i przejrzyste prowizje.`
       ].join("\n"))
-      .setFooter({ text: "(c) 2026 StarX Exchange" });
+      .setFooter({ text: "© 2026 StarX Exchange" });
 
     const menu = new StringSelectMenuBuilder()
       .setCustomId("show_rates")
@@ -132,7 +132,7 @@ module.exports = async (client) => {
       .setColor("#1b2dff")
       .setTitle(`StarX Exchange >> ${type}`)
       .setDescription(description)
-      .setFooter({ text: "(c) 2026 StarX Exchange" });
+      .setFooter({ text: "© 2026 StarX Exchange" });
 
     return interaction.reply({
       embeds: [embed],
@@ -140,3 +140,4 @@ module.exports = async (client) => {
     });
   });
 };
+
