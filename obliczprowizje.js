@@ -5,52 +5,37 @@ const {
     ModalBuilder,
     TextInputBuilder,
     TextInputStyle,
-    ButtonBuilder,
-    ButtonStyle,
+    LabelBuilder,
+    StringSelectMenuOptionBuilder,
     Events
 } = require("discord.js");
 
 module.exports = (client) => {
     const CHANNEL_ID = "1499568863602540645";
-
-    const selectedType = {};
-    const selectedFrom = {};
-
-    const EMOJI_BLIK = "<:blik:1499784231608389742>";
-    const EMOJI_PAYPAL = "<:paypal:1499784258091483236>";
-    const EMOJI_CRYPTO = "<:crypto:1499784635201224724>";
-    const EMOJI_LTC = "<:ltc:1499784285211726014>";
-    const EMOJI_PSC = "<:MYPSC:1519440223140970636>";
-    const EMOJI_SKRILL = "<:SKRILL:1519440276492521472>";
-
-    const EMOJI_MONEY = "<a:money:1501685438103031920>";
-    const EMOJI_BOX = "<:box:1500243849535033577>";
-    const EMOJI_ARROW = "<a:Arrow_White:1508094625984811038>";
     const SEPARATOR = "-----------------------";
+
+    const EMOJI = {
+        blik: "<:blik:1499784231608389742>",
+        paypal: "<:paypal:1499784258091483236>",
+        crypto: "<:crypto:1499784635201224724>",
+        ltc: "<:ltc:1499784285211726014>",
+        psc: "<:MYPSC:1519440223140970636>",
+        skrill: "<:SKRILL:1519440276492521472>",
+        money: "<a:money:1501685438103031920>",
+        box: "<:box:1500243849535033577>",
+        arrow: "<a:Arrow_White:1508094625984811038>"
+    };
 
     const rates = {
         BLIK_PAYPAL: 2,
         BLIK_CRYPTO: 8,
         BLIK_LTC: 8,
+        BLIK_SKRILL: 2,
 
         KODBLIK_PAYPAL: 6,
         KODBLIK_CRYPTO: 11,
         KODBLIK_LTC: 11,
-
-        PAYPAL_BLIK: 9,
-        PAYPAL_CRYPTO: 9,
-        PAYPAL_LTC: 9,
-
-        CRYPTO_BLIK: 4,
-        CRYPTO_KODBLIK: 4,
-        CRYPTO_PAYPAL: 4,
-        CRYPTO_CRYPTO: 4,
-        CRYPTO_LTC: 4,
-
-        LTC_BLIK: 4,
-        LTC_KODBLIK: 4,
-        LTC_PAYPAL: 4,
-        LTC_CRYPTO: 4,
+        KODBLIK_SKRILL: 6,
 
         PSC_BLIK: 11,
         PSC_KODBLIK: 11,
@@ -59,68 +44,125 @@ module.exports = (client) => {
         PSC_LTC: 13,
         PSC_SKRILL: 11,
 
+        PAYPAL_BLIK: 9,
+        PAYPAL_CRYPTO: 9,
+        PAYPAL_LTC: 9,
+        PAYPAL_SKRILL: 9,
+
+        CRYPTO_BLIK: 4,
+        CRYPTO_KODBLIK: 4,
+        CRYPTO_PAYPAL: 4,
+        CRYPTO_CRYPTO: 4,
+        CRYPTO_LTC: 4,
+        CRYPTO_SKRILL: 4,
+
         SKRILL_BLIK: 9,
         SKRILL_KODBLIK: 9,
         SKRILL_PAYPAL: 9,
         SKRILL_CRYPTO: 9,
-        SKRILL_LTC: 9
+        SKRILL_LTC: 9,
+
+        LTC_BLIK: 4,
+        LTC_KODBLIK: 4,
+        LTC_PAYPAL: 4,
+        LTC_CRYPTO: 4
     };
-
-    const methods = [
-        { label: "BLIK", value: "BLIK", emoji: { id: "1499784231608389742", name: "blik" } },
-        { label: "KOD BLIK", value: "KODBLIK", emoji: { id: "1499784231608389742", name: "blik" } },
-        { label: "PAYPAL", value: "PAYPAL", emoji: { id: "1499784258091483236", name: "paypal" } },
-        { label: "LTC", value: "LTC", emoji: { id: "1499784285211726014", name: "ltc" } },
-        { label: "CRYPTO", value: "CRYPTO", emoji: { id: "1499784635201224724", name: "crypto" } },
-        { label: "PSC", value: "PSC", emoji: { id: "1519440223140970636", name: "MYPSC" } },
-        { label: "SKRILL", value: "SKRILL", emoji: { id: "1519440276492521472", name: "SKRILL" } }
-    ];
-
-    function emoji(method) {
-        if (method === "BLIK") return EMOJI_BLIK;
-        if (method === "KODBLIK") return EMOJI_BLIK;
-        if (method === "PAYPAL") return EMOJI_PAYPAL;
-        if (method === "CRYPTO") return EMOJI_CRYPTO;
-        if (method === "LTC") return EMOJI_LTC;
-        if (method === "PSC") return EMOJI_PSC;
-        if (method === "SKRILL") return EMOJI_SKRILL;
-        return EMOJI_MONEY;
-    }
 
     function methodName(method) {
         if (method === "KODBLIK") return "KOD BLIK";
         return method;
     }
 
-    function methodButtonRows(prefix) {
-        const buttons = methods.map(method =>
-            new ButtonBuilder()
-                .setCustomId(`${prefix}_${method.value}`)
-                .setLabel(method.label)
-                .setEmoji(method.emoji)
-                .setStyle(ButtonStyle.Secondary)
-        );
+    function methodEmoji(method) {
+        if (method === "BLIK" || method === "KODBLIK") return EMOJI.blik;
+        if (method === "PAYPAL") return EMOJI.paypal;
+        if (method === "CRYPTO") return EMOJI.crypto;
+        if (method === "LTC") return EMOJI.ltc;
+        if (method === "PSC") return EMOJI.psc;
+        if (method === "SKRILL") return EMOJI.skrill;
+        return EMOJI.money;
+    }
 
+    function methodOptions() {
         return [
-            new ActionRowBuilder().addComponents(buttons.slice(0, 4)),
-            new ActionRowBuilder().addComponents(buttons.slice(4))
+            new StringSelectMenuOptionBuilder()
+                .setLabel("BLIK")
+                .setValue("BLIK")
+                .setEmoji({ id: "1499784231608389742", name: "blik" }),
+            new StringSelectMenuOptionBuilder()
+                .setLabel("KOD BLIK")
+                .setValue("KODBLIK")
+                .setEmoji({ id: "1499784231608389742", name: "blik" }),
+            new StringSelectMenuOptionBuilder()
+                .setLabel("PSC")
+                .setValue("PSC")
+                .setEmoji({ id: "1519440223140970636", name: "MYPSC" }),
+            new StringSelectMenuOptionBuilder()
+                .setLabel("PAYPAL")
+                .setValue("PAYPAL")
+                .setEmoji({ id: "1499784258091483236", name: "paypal" }),
+            new StringSelectMenuOptionBuilder()
+                .setLabel("CRYPTO")
+                .setValue("CRYPTO")
+                .setEmoji({ id: "1499784635201224724", name: "crypto" }),
+            new StringSelectMenuOptionBuilder()
+                .setLabel("SKRILL")
+                .setValue("SKRILL")
+                .setEmoji({ id: "1519440276492521472", name: "SKRILL" }),
+            new StringSelectMenuOptionBuilder()
+                .setLabel("LTC")
+                .setValue("LTC")
+                .setEmoji({ id: "1499784285211726014", name: "ltc" })
         ];
     }
 
-    function createAmountModal(to) {
-        return new ModalBuilder()
-            .setCustomId(`calc_modal_${to}`)
-            .setTitle("StarX Exchange - Kalkulator")
-            .addComponents(
-                new ActionRowBuilder().addComponents(
-                    new TextInputBuilder()
-                        .setCustomId("kwota")
-                        .setLabel("Podaj kwote")
-                        .setPlaceholder("Np. 100")
-                        .setStyle(TextInputStyle.Short)
-                        .setRequired(true)
-                )
-            );
+    function getModalSelectValue(fields, customId) {
+        const field = fields?.fields?.get(customId) || fields?.getField?.(customId);
+        if (Array.isArray(field?.values) && field.values.length) return field.values[0];
+        if (typeof field?.value === "string") return field.value;
+        return "";
+    }
+
+    function createCalcModal(type) {
+        const modal = new ModalBuilder()
+            .setCustomId(`calc_modal_${type}`)
+            .setTitle("Potrzebne informacje.");
+
+        const amountInput = new TextInputBuilder()
+            .setCustomId("amount")
+            .setStyle(TextInputStyle.Short)
+            .setPlaceholder("Przyklad: 250")
+            .setRequired(true);
+
+        const amountLabel = new LabelBuilder()
+            .setLabel("JAKA KWOTA:")
+            .setTextInputComponent(amountInput);
+
+        const fromSelect = new StringSelectMenuBuilder()
+            .setCustomId("from")
+            .setPlaceholder("Nie wybrales/as zadnej opcji.")
+            .setRequired(true)
+            .addOptions(methodOptions());
+
+        const fromLabel = new LabelBuilder()
+            .setLabel("Z CZEGO:")
+            .setStringSelectMenuComponent(fromSelect);
+
+        const toSelect = new StringSelectMenuBuilder()
+            .setCustomId("to")
+            .setPlaceholder("Nie wybrales/as zadnej opcji.")
+            .setRequired(true)
+            .addOptions(methodOptions());
+
+        const toLabel = new LabelBuilder()
+            .setLabel("NA CO:")
+            .setStringSelectMenuComponent(toSelect);
+
+        return modal.addLabelComponents(
+            amountLabel,
+            fromLabel,
+            toLabel
+        );
     }
 
     async function sendPanel() {
@@ -129,23 +171,19 @@ module.exports = (client) => {
 
         const embed = new EmbedBuilder()
             .setColor("#1b2dff")
-            .setTitle("StarX Exchange >> OBLICZ PROWIZJE")
+            .setTitle("StarX Exchange x KALKULATOR PROWIZJI")
             .setDescription([
-                `${EMOJI_MONEY} Oblicz ile dostaniesz lub ile musisz wplacic.`,
+                `${EMOJI.arrow} Jezeli chcesz obliczyc prowizje swojej wymiany, wybierz opcje ponizej.`,
                 "",
                 SEPARATOR,
                 "",
-                `${EMOJI_ARROW} Minimalna prowizja wynosi: **3 PLN**`,
-                "",
-                SEPARATOR,
-                "",
-                `${EMOJI_BOX} Kliknij menu ponizej.`
+                `${EMOJI.arrow} Minimalna prowizja wynosi: **3 PLN**`
             ].join("\n"))
-            .setFooter({ text: "(c) 2026 StarX Exchange x Kalkulator" });
+            .setFooter({ text: "(c) 2026 StarX Exchange" });
 
         const menu = new StringSelectMenuBuilder()
             .setCustomId("calc_type")
-            .setPlaceholder("Wybierz opcje")
+            .setPlaceholder("Nie wybrales/as zadnej opcji.")
             .addOptions([
                 {
                     label: "Jaka kwote otrzymam?",
@@ -164,91 +202,68 @@ module.exports = (client) => {
             components: [new ActionRowBuilder().addComponents(menu)]
         });
 
-        console.log("Kalkulator wyslany");
+        console.log("Kalkulator prowizji wyslany");
     }
 
-    client.on(Events.ClientReady, async () => {
-        setTimeout(sendPanel, 3000);
-    });
+    if (client.isReady()) {
+        sendPanel();
+    } else {
+        client.once(Events.ClientReady, sendPanel);
+    }
 
-    client.on(Events.InteractionCreate, async interaction => {
+    client.on(Events.InteractionCreate, async (interaction) => {
         if (interaction.isStringSelectMenu() && interaction.customId === "calc_type") {
-            selectedType[interaction.user.id] = interaction.values[0];
-
-            return interaction.reply({
-                content: `${EMOJI_ARROW} Wybierz metode Z:`,
-                components: methodButtonRows("calc_from_btn"),
-                flags: 64
-            });
-        }
-
-        if (interaction.isButton() && interaction.customId.startsWith("calc_from_btn_")) {
-            const from = interaction.customId.replace("calc_from_btn_", "");
-            selectedFrom[interaction.user.id] = from;
-
-            return interaction.update({
-                content: `${emoji(from)} Wybrano Z: **${methodName(from)}**\n${EMOJI_ARROW} Wybierz metode NA:`,
-                components: methodButtonRows("calc_to_btn")
-            });
-        }
-
-        if (interaction.isButton() && interaction.customId.startsWith("calc_to_btn_")) {
-            const to = interaction.customId.replace("calc_to_btn_", "");
-            return interaction.showModal(createAmountModal(to));
+            return interaction.showModal(createCalcModal(interaction.values[0]));
         }
 
         if (!interaction.isModalSubmit() || !interaction.customId.startsWith("calc_modal_")) return;
 
-        const to = interaction.customId.replace("calc_modal_", "");
-        const from = selectedFrom[interaction.user.id];
-        const type = selectedType[interaction.user.id];
-        const key = `${from}_${to}`;
-
-        if (!from || !type || !rates[key]) {
-            return interaction.reply({
-                content: "Nie mozna wymienic tej metody.",
-                flags: 64
-            });
-        }
-
-        const kwota = parseFloat(
+        const type = interaction.customId.replace("calc_modal_", "");
+        const amount = parseFloat(
             interaction.fields
-                .getTextInputValue("kwota")
+                .getTextInputValue("amount")
                 .replace(",", ".")
         );
+        const from = getModalSelectValue(interaction.fields, "from");
+        const to = getModalSelectValue(interaction.fields, "to");
+        const rateKey = `${from}_${to}`;
+        const percent = rates[rateKey];
 
-        if (isNaN(kwota) || kwota <= 0) {
+        if (isNaN(amount) || amount <= 0) {
             return interaction.reply({
                 content: "Podano nieprawidlowa kwote.",
                 flags: 64
             });
         }
 
-        const percent = rates[key];
-        let prowizja = (kwota * percent) / 100;
-
-        if (prowizja < 3) {
-            prowizja = 3;
+        if (!percent) {
+            return interaction.reply({
+                content: "Nie mozna wymienic tej metody.",
+                flags: 64
+            });
         }
 
-        const wynik = type === "otrzymam"
-            ? kwota - prowizja
-            : kwota + prowizja;
+        let fee = (amount * percent) / 100;
+        if (fee < 3) fee = 3;
+
+        const result = type === "otrzymam"
+            ? amount - fee
+            : amount + fee;
 
         const embed = new EmbedBuilder()
             .setColor("#1b2dff")
-            .setTitle("StarX Exchange >> WYNIK")
+            .setTitle("StarX Exchange x WYNIK")
             .setDescription([
-                `${emoji(from)} **Z:** ${methodName(from)}`,
+                `${methodEmoji(from)} **Z:** ${methodName(from)}`,
                 "",
-                `${emoji(to)} **Na:** ${methodName(to)}`,
+                `${methodEmoji(to)} **Na:** ${methodName(to)}`,
                 "",
-                `${EMOJI_MONEY} **Prowizja:** ${percent}%`,
-                `${EMOJI_ARROW} **Minimalna prowizja:** 3 PLN`,
+                `${EMOJI.money} **Prowizja:** ${percent}%`,
+                `${EMOJI.arrow} **Minimalna prowizja:** 3 PLN`,
                 "",
                 SEPARATOR,
                 "",
-                `${EMOJI_MONEY} **Wynik:** \`${wynik.toFixed(2)} PLN\``
+                `${EMOJI.money} **Wynik:** \`${result.toFixed(2)} PLN\``
             ].join("\n"))
             .setFooter({ text: "(c) 2026 StarX Exchange x Kalkulator" });
 

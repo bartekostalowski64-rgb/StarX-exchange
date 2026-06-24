@@ -273,19 +273,23 @@ module.exports = (client) => {
     "BLIK->PAYPAL": 2,
     "BLIK->CRYPTO": 8,
     "BLIK->LTC": 8,
+    "BLIK->SKRILL": 2,
 
     "KODBLIK->PAYPAL": 6,
     "KODBLIK->CRYPTO": 11,
     "KODBLIK->LTC": 11,
+    "KODBLIK->SKRILL": 6,
 
     "PAYPAL->BLIK": 9,
     "PAYPAL->CRYPTO": 9,
     "PAYPAL->LTC": 9,
+    "PAYPAL->SKRILL": 9,
 
     "CRYPTO->BLIK": 4,
     "CRYPTO->KODBLIK": 4,
     "CRYPTO->PAYPAL": 4,
     "CRYPTO->LTC": 4,
+    "CRYPTO->SKRILL": 4,
 
     "LTC->BLIK": 4,
     "LTC->KODBLIK": 4,
