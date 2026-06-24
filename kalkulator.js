@@ -254,6 +254,35 @@ ${EMOJI_ARROW} Minimalna prowizja wynosi: **3 PLN**
 `;
     }
 
+    if (type === "PSC") {
+      desc = `
+\u2022 ${EMOJI_PSC} **PSC \u279c** ${EMOJI_BLIK} **BLIK** \u2014 Prowizja wynosi: **11%**
+\u2022 ${EMOJI_PSC} **PSC \u279c** ${EMOJI_BLIK} **KOD BLIK** \u2014 Prowizja wynosi: **11%**
+\u2022 ${EMOJI_PSC} **PSC \u279c** ${EMOJI_PAYPAL} **PAYPAL** \u2014 Prowizja wynosi: **11%**
+\u2022 ${EMOJI_PSC} **PSC \u279c** ${EMOJI_CRYPTO} **CRYPTO** \u2014 Prowizja wynosi: **13%**
+\u2022 ${EMOJI_PSC} **PSC \u279c** ${EMOJI_LTC} **LTC** \u2014 Prowizja wynosi: **13%**
+\u2022 ${EMOJI_PSC} **PSC \u279c** ${EMOJI_SKRILL} **SKRILL** \u2014 Prowizja wynosi: **11%**
+
+\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501
+
+${EMOJI_ARROW} Minimalna prowizja wynosi: **3 PLN**
+`;
+    }
+
+    if (type === "SKRILL") {
+      desc = `
+\u2022 ${EMOJI_SKRILL} **SKRILL \u279c** ${EMOJI_BLIK} **BLIK** \u2014 Prowizja wynosi: **9%**
+\u2022 ${EMOJI_SKRILL} **SKRILL \u279c** ${EMOJI_BLIK} **KOD BLIK** \u2014 Prowizja wynosi: **9%**
+\u2022 ${EMOJI_SKRILL} **SKRILL \u279c** ${EMOJI_PAYPAL} **PAYPAL** \u2014 Prowizja wynosi: **9%**
+\u2022 ${EMOJI_SKRILL} **SKRILL \u279c** ${EMOJI_CRYPTO} **CRYPTO** \u2014 Prowizja wynosi: **9%**
+\u2022 ${EMOJI_SKRILL} **SKRILL \u279c** ${EMOJI_LTC} **LTC** \u2014 Prowizja wynosi: **9%**
+
+\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501
+
+${EMOJI_ARROW} Minimalna prowizja wynosi: **3 PLN**
+`;
+    }
+
     // ==========================
     // LTC
     // ==========================
