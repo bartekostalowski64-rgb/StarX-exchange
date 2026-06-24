@@ -5,6 +5,7 @@ const {
     ModalBuilder,
     TextInputBuilder,
     TextInputStyle,
+    LabelBuilder,
     Events
 } = require("discord.js");
 
@@ -104,6 +105,117 @@ module.exports = (client) => {
         return method;
     }
 
+    function getModalSelectValue(fields, customId) {
+        const field = fields?.fields?.get(customId) || fields?.getField?.(customId);
+        if (Array.isArray(field?.values) && field.values.length) return field.values[0];
+        if (typeof field?.value === "string") return field.value;
+        return "";
+    }
+
+    function methodOptions() {
+        return [
+            {
+                label: "BLIK",
+                value: "BLIK",
+                emoji: {
+                    id: "1499784231608389742",
+                    name: "blik"
+                }
+            },
+            {
+                label: "KOD BLIK",
+                value: "KODBLIK",
+                emoji: {
+                    id: "1499784231608389742",
+                    name: "blik"
+                }
+            },
+            {
+                label: "PAYPAL",
+                value: "PAYPAL",
+                emoji: {
+                    id: "1499784258091483236",
+                    name: "paypal"
+                }
+            },
+            {
+                label: "LTC",
+                value: "LTC",
+                emoji: {
+                    id: "1499784285211726014",
+                    name: "ltc"
+                }
+            },
+            {
+                label: "CRYPTO",
+                value: "CRYPTO",
+                emoji: {
+                    id: "1499784635201224724",
+                    name: "crypto"
+                }
+            },
+            {
+                label: "PSC",
+                value: "PSC",
+                emoji: {
+                    id: "1519440223140970636",
+                    name: "MYPSC"
+                }
+            },
+            {
+                label: "SKRILL",
+                value: "SKRILL",
+                emoji: {
+                    id: "1519440276492521472",
+                    name: "SKRILL"
+                }
+            }
+        ];
+    }
+
+    function createCalcModal(type) {
+        const modal = new ModalBuilder()
+            .setCustomId(`calc_full_modal_${type}`)
+            .setTitle("StarX Exchange - Kalkulator");
+
+        const amountInput = new TextInputBuilder()
+            .setCustomId("kwota")
+            .setLabel("Podaj kwote")
+            .setPlaceholder("Np. 100")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true);
+
+        const amountLabel = new LabelBuilder()
+            .setLabel("KWOTA")
+            .setTextInputComponent(amountInput);
+
+        const fromSelect = new StringSelectMenuBuilder()
+            .setCustomId("calc_from_modal")
+            .setPlaceholder("Z jakiej metody?")
+            .setRequired(true)
+            .addOptions(methodOptions());
+
+        const fromLabel = new LabelBuilder()
+            .setLabel("Z CZEGO")
+            .setStringSelectMenuComponent(fromSelect);
+
+        const toSelect = new StringSelectMenuBuilder()
+            .setCustomId("calc_to_modal")
+            .setPlaceholder("Na jaka metode?")
+            .setRequired(true)
+            .addOptions(methodOptions());
+
+        const toLabel = new LabelBuilder()
+            .setLabel("NA CO")
+            .setStringSelectMenuComponent(toSelect);
+
+        return modal.addLabelComponents(
+            amountLabel,
+            fromLabel,
+            toLabel
+        );
+    }
+
     // =====================
     // PANEL
     // =====================
@@ -136,11 +248,21 @@ ${EMOJI_BOX} Kliknij menu poniżej.
             .addOptions([
                 {
                     label: "Jaką kwotę otrzymam?",
-                    value: "otrzymam"
+                    value: "otrzymam",
+                    emoji: {
+                        id: "1501685438103031920",
+                        name: "money",
+                        animated: true
+                    }
                 },
                 {
                     label: "Ile muszę wpłacić aby dostać X?",
-                    value: "wplace"
+                    value: "wplace",
+                    emoji: {
+                        id: "1508094625984811038",
+                        name: "Arrow_White",
+                        animated: true
+                    }
                 }
             ]);
 
@@ -179,6 +301,7 @@ ${EMOJI_BOX} Kliknij menu poniżej.
             if (interaction.customId === "calc_type") {
 
                 selectedType[interaction.user.id] = interaction.values[0];
+                return interaction.showModal(createCalcModal(interaction.values[0]));
 
                 const menu = new StringSelectMenuBuilder()
                     .setCustomId("calc_from")
@@ -355,6 +478,68 @@ ${EMOJI_BOX} Kliknij menu poniżej.
         // =====================
 
         if (interaction.isModalSubmit()) {
+
+            if (interaction.customId.startsWith("calc_full_modal_")) {
+                const type = interaction.customId.replace("calc_full_modal_", "");
+                const from = getModalSelectValue(interaction.fields, "calc_from_modal");
+                const to = getModalSelectValue(interaction.fields, "calc_to_modal");
+                const key = `${from}_${to}`;
+
+                if (!rates[key]) {
+                    return interaction.reply({
+                        content: "Nie moĹĽna wymieniÄ‡ tej metody.",
+                        flags: 64
+                    });
+                }
+
+                const percent = rates[key];
+                const kwota = parseFloat(
+                    interaction.fields
+                        .getTextInputValue("kwota")
+                        .replace(",", ".")
+                );
+
+                if (isNaN(kwota) || kwota <= 0) {
+                    return interaction.reply({
+                        content: "Podano nieprawidĹ‚owÄ… kwotÄ™.",
+                        flags: 64
+                    });
+                }
+
+                let prowizja = (kwota * percent) / 100;
+
+                if (prowizja < 3) {
+                    prowizja = 3;
+                }
+
+                const wynik = type === "otrzymam"
+                    ? kwota - prowizja
+                    : kwota + prowizja;
+
+                const embed = new EmbedBuilder()
+                    .setColor("#1b2dff")
+                    .setTitle("đźŚź StarX Exchange Â» WYNIK")
+                    .setDescription(`
+${emoji(from)} **Z:** ${methodName(from)}
+
+${emoji(to)} **Na:** ${methodName(to)}
+
+${EMOJI_MONEY} **Prowizja:** ${percent}%
+${EMOJI_ARROW} **Minimalna prowizja:** 3 PLN
+
+â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”â”
+
+${EMOJI_MONEY} **Wynik:** \`${wynik.toFixed(2)} PLN\`
+                    `)
+                    .setFooter({
+                        text: "Â© 2026 StarX Exchange x Kalkulator"
+                    });
+
+                return interaction.reply({
+                    embeds: [embed],
+                    flags: 64
+                });
+            }
 
             if (!interaction.customId.startsWith("calc_modal_"))
                 return;

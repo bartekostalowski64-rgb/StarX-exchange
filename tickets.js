@@ -155,6 +155,27 @@ module.exports = (client) => {
       );
   }
 
+  function parseUserId(value) {
+    const match = String(value || "").trim().match(/\d{17,20}/);
+    return match ? match[0] : null;
+  }
+
+  function createMiddlemanModal() {
+    return new ModalBuilder()
+      .setCustomId("middleman_modal")
+      .setTitle("Middleman")
+      .addComponents(
+        new ActionRowBuilder().addComponents(
+          new TextInputBuilder()
+            .setCustomId("middleman_user_id")
+            .setLabel("ID osoby do dodania")
+            .setPlaceholder("Np. 123456789012345678")
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true)
+        )
+      );
+  }
+
   // =========================================
   // EMOJI
   // =========================================
@@ -608,6 +629,10 @@ module.exports = (client) => {
         return interaction.showModal(createExchangeModal());
       }
 
+      if (type === "middleman") {
+        return interaction.showModal(createMiddlemanModal());
+      }
+
       // =====================================
       // CATEGORY NAME
       // =====================================
@@ -714,6 +739,107 @@ module.exports = (client) => {
       return interaction.reply({
         content:
           `${EMOJI.ticket} Ticket został utworzony: ${channel}`,
+        ephemeral: true
+      });
+    }
+
+    // =========================
+    // MIDDLEMAN MODAL SUBMIT
+    // =========================
+    if (interaction.isModalSubmit() && interaction.customId === "middleman_modal") {
+      const otherUserId = parseUserId(interaction.fields.getTextInputValue("middleman_user_id"));
+
+      if (!otherUserId) {
+        return interaction.reply({
+          content: `${EMOJI.warning} Podaj poprawne ID uzytkownika.`,
+          ephemeral: true
+        });
+      }
+
+      if (otherUserId === interaction.user.id) {
+        return interaction.reply({
+          content: `${EMOJI.warning} Nie mozesz dodac samego siebie.`,
+          ephemeral: true
+        });
+      }
+
+      const otherMember = await interaction.guild.members.fetch(otherUserId).catch(() => null);
+
+      if (!otherMember) {
+        return interaction.reply({
+          content: `${EMOJI.warning} Nie znaleziono takiego uzytkownika na serwerze.`,
+          ephemeral: true
+        });
+      }
+
+      const existing = interaction.guild.channels.cache.find(c => c.topic?.startsWith(interaction.user.id));
+      if (existing) {
+        return interaction.reply({
+          content: `${EMOJI.warning} Masz juĹĽ ticket: ${existing}`,
+          ephemeral: true
+        });
+      }
+
+      const channel = await interaction.guild.channels.create({
+        name: unlockTicketName(`middleman-${interaction.user.username}`),
+        parent: CATEGORY_UNCLAIMED_ID,
+        topic: `${interaction.user.id}:middleman:${otherUserId}`,
+        type: ChannelType.GuildText,
+        permissionOverwrites: [
+          {
+            id: interaction.guild.id,
+            deny: [PermissionsBitField.Flags.ViewChannel]
+          },
+          {
+            id: interaction.user.id,
+            allow: [
+              PermissionsBitField.Flags.ViewChannel,
+              PermissionsBitField.Flags.SendMessages,
+              PermissionsBitField.Flags.ReadMessageHistory,
+              PermissionsBitField.Flags.AttachFiles
+            ]
+          },
+          {
+            id: otherUserId,
+            allow: [
+              PermissionsBitField.Flags.ViewChannel,
+              PermissionsBitField.Flags.SendMessages,
+              PermissionsBitField.Flags.ReadMessageHistory,
+              PermissionsBitField.Flags.AttachFiles
+            ]
+          },
+          {
+            id: REALIZATOR_ROLE_ID,
+            allow: [
+              PermissionsBitField.Flags.ViewChannel,
+              PermissionsBitField.Flags.SendMessages,
+              PermissionsBitField.Flags.ReadMessageHistory,
+              PermissionsBitField.Flags.ManageMessages
+            ]
+          }
+        ]
+      });
+
+      const embed = new EmbedBuilder()
+        .setColor(EMBED_COLOR)
+        .setTitle(`${EMOJI.middleman} đźŚź StarX Exchange Ă— MIDDLEMAN`)
+        .setDescription([
+          `> ${EMOJI.arrow} UĹĽytkownik ${interaction.user} utworzyĹ‚ ticket middleman.`,
+          `> ${EMOJI.arrow} Dodana osoba: <@${otherUserId}>`,
+          ``,
+          `> ${EMOJI.arrow} Realizator odpowie najszybciej jak to moĹĽliwe`
+        ].join("\n"))
+        .setImage(BANNER_TICKET_URL)
+        .setFooter({ text: "Â© 2026 StarX Exchange" });
+
+      await channel.send({
+        content: `${interaction.user} <@${otherUserId}> <@&${REALIZATOR_ROLE_ID}>`,
+        embeds: [embed],
+        components: [ticketButtons()]
+      });
+
+      return interaction.reply({
+        content: `${EMOJI.ticket} Ticket zostaĹ‚ utworzony: ${channel}`,
         ephemeral: true
       });
     }
